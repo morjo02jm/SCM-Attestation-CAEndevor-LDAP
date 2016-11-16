@@ -31,6 +31,11 @@ public class EndevorRepLdap {
 	void EndevorRepLdap() {
 		
 	}
+	
+	private static void readDBToRepoContainer(JCaContainer cRepoInfo, 
+			                                  String sDB2Password) {
+		
+	}
 
 	public static void main(String[] args) {
 		int iParms = args.length;
@@ -38,6 +43,8 @@ public class EndevorRepLdap {
 		String sOutputFile = "";
 		String sBCC = "";
 		String sLogPath = "endevorrepldap.log";
+		String sDBPassword = "";
+		String sIMAGPassword = "";
 		
 		// check parameters
 		for (int i = 0; i < iParms; i++)
@@ -73,5 +80,23 @@ public class EndevorRepLdap {
         		                           "Team-GIS-ToolsSolutions-Global@ca.com",
         		                           cLDAP);
 		
+		String sDecrypted = "R.oj;G>]<?.4UiQ";
+		String sEncrypt = frame.AESEncrypt(sDecrypted);
+		frame.printLog(sEncrypt);
+		
+		try {	
+			Map<String, String> environ = System.getenv();
+	        for (String envName : environ.keySet()) {
+	        	if (envName.equalsIgnoreCase("ENDEVOR_DB_PASSWORD"))        
+	        		sDBPassword = frame.AESDecrypt(environ.get(envName));
+	        	if (envName.equalsIgnoreCase("IMAG_DB_PASSWORD"))        
+	        		sIMAGPassword = frame.AESDecrypt(environ.get(envName));
+	        }
+			// Write out processed records to database
+			JCaContainer cRepoInfo = new JCaContainer();
+			readDBToRepoContainer(cRepoInfo, sDBPassword);
+	     } catch (Exception e) {
+	    	 
+	     }	// try/catch blocks         
 	}
 }
