@@ -31,33 +31,34 @@ public class EndevorRepLdap {
 			Connection conn = DriverManager.getConnection(sJDBC);
 	
 			sqlError = "DB2. Error reading Endevor records from CIA database.";
-			//sqlStmt = frame.readTextResource("EndeavorDBQuery.txt", "= 'VIEW'", "", "");
-			sqlStmt = frame.readTextResource("EndeavorDBQuery.txt", "IS NOT NULL", "", "");
+			//sqlStmt = frame.readTextResource("EndevorDBQuery.txt", "= 'VIEW'", "", "");
+			sqlStmt = frame.readTextResource("EndevorDBQuery.txt", "IS NOT NULL", "", "");
 			pstmt=conn.prepareStatement(sqlStmt); 
 			rSet = pstmt.executeQuery();
 			
 			while (rSet.next()) {
 				String sAuthType = rSet.getString("AUTHTYPE").trim();
 				String sRoleID = (sAuthType.equalsIgnoreCase("R"))? rSet.getString("ROLEID"): "";
-				cRepoInfo.setString("APP",          rSet.getString("APP").trim(),                  iIndex);
-				cRepoInfo.setString("APP_INSTANCE", rSet.getString("APP_INSTANCE").trim(),         iIndex);
-				cRepoInfo.setString("PRODUCT",      rSet.getString("PRODUCT").trim(),              iIndex);
-				cRepoInfo.setString("AUTHTYPE",     sAuthType,                                     iIndex);
-				cRepoInfo.setString("ROLEID",       sRoleID.trim(),                                iIndex);
-				cRepoInfo.setString("RESMASK",      rSet.getString("RESMASK").trim(),              iIndex);
-				cRepoInfo.setString("MANAGER",      rSet.getString("MANAGER").toLowerCase().trim(),iIndex);
-				cRepoInfo.setString("USERID",       rSet.getString("USERID").toLowerCase().trim(), iIndex);
-				cRepoInfo.setString("ACC_READ",     rSet.getString("acc_read").trim(),             iIndex);
-				cRepoInfo.setString("ACC_WRITE",    rSet.getString("acc_write").trim(),            iIndex);
-				cRepoInfo.setString("ACC_UPDATE",   rSet.getString("acc_update").trim(),           iIndex);
-				cRepoInfo.setString("ACC_ALL",      rSet.getString("acc_all").trim(),              iIndex);
-				cRepoInfo.setString("ACC_NONE",     rSet.getString("acc_none").trim(),             iIndex);
-				cRepoInfo.setString("ACC_CREATE",   rSet.getString("acc_create").trim(),           iIndex);
-				cRepoInfo.setString("ACC_FETCH",    rSet.getString("acc_fetch").trim(),            iIndex);
-				cRepoInfo.setString("ACC_SCRATCH",  rSet.getString("acc_scratch").trim(),          iIndex);
-				cRepoInfo.setString("ACC_CONTROL",  rSet.getString("acc_control").trim(),          iIndex);
-				cRepoInfo.setString("ACC_INQUIRE",  rSet.getString("acc_inquire").trim(),          iIndex);
-				cRepoInfo.setString("ACC_SET",      rSet.getString("acc_set").trim(),              iIndex);			
+				cRepoInfo.setString("APP",           rSet.getString("APP").trim(),                  iIndex);
+				cRepoInfo.setString("APP_INSTANCE",  rSet.getString("APP_INSTANCE").trim(),         iIndex);
+				cRepoInfo.setString("PRODUCT",       rSet.getString("PRODUCT").trim(),              iIndex);
+				cRepoInfo.setString("AUTHTYPE",      sAuthType,                                     iIndex);
+				cRepoInfo.setString("ROLEID",        sRoleID.trim(),                                iIndex);
+				cRepoInfo.setString("RESMASK",       rSet.getString("RESMASK").trim(),              iIndex);
+				cRepoInfo.setString("ADMINISTRATOR", rSet.getString("ADMINISTRATOR").toLowerCase().trim(),iIndex);
+				cRepoInfo.setString("RESOURCE_OWNER",rSet.getString("RESOURCE_OWNER").toLowerCase().trim(),iIndex);
+				cRepoInfo.setString("USERID",        rSet.getString("USERID").toLowerCase().trim(), iIndex);
+				cRepoInfo.setString("ACC_READ",      rSet.getString("acc_read").trim(),             iIndex);
+				cRepoInfo.setString("ACC_WRITE",     rSet.getString("acc_write").trim(),            iIndex);
+				cRepoInfo.setString("ACC_UPDATE",    rSet.getString("acc_update").trim(),           iIndex);
+				cRepoInfo.setString("ACC_ALL",       rSet.getString("acc_all").trim(),              iIndex);
+				cRepoInfo.setString("ACC_NONE",      rSet.getString("acc_none").trim(),             iIndex);
+				cRepoInfo.setString("ACC_CREATE",    rSet.getString("acc_create").trim(),           iIndex);
+				cRepoInfo.setString("ACC_FETCH",     rSet.getString("acc_fetch").trim(),            iIndex);
+				cRepoInfo.setString("ACC_SCRATCH",   rSet.getString("acc_scratch").trim(),          iIndex);
+				cRepoInfo.setString("ACC_CONTROL",   rSet.getString("acc_control").trim(),          iIndex);
+				cRepoInfo.setString("ACC_INQUIRE",   rSet.getString("acc_inquire").trim(),          iIndex);
+				cRepoInfo.setString("ACC_SET",       rSet.getString("acc_set").trim(),              iIndex);			
 				iIndex++;
 			} // loop over record sets
 			
@@ -76,31 +77,33 @@ public class EndevorRepLdap {
 		}	
 	}
 	
-	private static void writeCSVFileFromListGeneric( JCaContainer cUserList, String sOutputFileName, char sep)
+	private static void writeCSVFileFromListGeneric( JCaContainer cList, String sOutputFileName, char sep)
 	{
 		File fout = new File(sOutputFileName);
 		
 		try {
 			FileOutputStream fos = new FileOutputStream(fout);
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
-			String[] keylist = cUserList.getKeyList();
-			int[] ord = new int[] {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18};
+			String[] keylist = cList.getKeyList();
+			int[] ord = new int[] {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
 			
 			String line = "";
 			for (int i=0; i<keylist.length; i++) {
-				if (!line.isEmpty()) line += sep;
+				if (!line.isEmpty()) 
+					line += sep;
 				line += keylist[ord[i]];
 			}
 			bw.write(line);
 			bw.newLine();
 			
-			for (int i=0; i < cUserList.getKeyElementCount(keylist[0]); i++) {
-				if (true) // TODO 
+			for (int i=0; i < cList.getKeyElementCount(keylist[0]); i++) {
+				if (!cList.getString("APP", i).isEmpty()) 
 				{
 					line = "";
 					for (int j=0; j<keylist.length; j++) {
-						if (!line.isEmpty()) line += sep;
-						line += cUserList.getString(keylist[ord[j]], i);
+						if (!line.isEmpty())
+							line += sep;
+						line += cList.getString(keylist[ord[j]], i);
 					}
 					bw.write(line);
 					bw.newLine();
@@ -127,7 +130,12 @@ public class EndevorRepLdap {
 		String sqlError = "";
 		String sJDBC = "jdbc:sqlserver://AWS-UQAPA6ZZ:1433;databaseName=GMQARITCGISTOOLS;user=gm_tools_user;password="+sImagDBPassword+";";
 		String sqlStmt0 = "insert into GITHUB_REVIEW "+
-	              "( Application, ApplicationLocation, EntitlementOwner1, EntitlementOwner2, ContactEmail, EntitlementName, EntitlementAttributes, User_ID, UserAttributes) values ";
+	              "( Application, ApplicationLocation, EntitlementOwner1, EntitlementOwner2, EntitlementName, EntitlementAttributes, ContactEmail, User_ID, UserAttributes) values ";
+		
+		String sEntitlement2 = "";
+		String sContactEmail = "";
+		String sEntitlementAttrs = "";
+		String sUserAttrs = "";
 		String sValues = "";
 		
 		try {
@@ -147,26 +155,50 @@ public class EndevorRepLdap {
 			int nRecordsWritten = 0;
 			int nBlock = 100;
 			
-			for (int i=0,nRecords=0; i<cRepoInfo.getKeyElementCount("TODO"); i++) {
-				if (nRecords%nBlock == 0)
-					sqlStmt = sqlStmt0;
-				else 
-					sqlStmt += " , ";
-			    sqlStmt += sValues;
-			    
-			    if (nRecords%nBlock == (nBlock-1)) {
-					pstmt=conn.prepareStatement(sqlStmt);  
-					iResult = pstmt.executeUpdate();
-					if (iResult > 0) nRecordsWritten += iResult;	
-					sqlStmt = "";
-			    }
-				nRecords++;				
+			for (int iIndex=0,nRecords=0; iIndex<cRepoInfo.getKeyElementCount("APP"); iIndex++) {
+				if (!cRepoInfo.getString("APP", iIndex).isEmpty()) { 
+					if (nRecords%nBlock == 0)
+						sqlStmt = sqlStmt0;
+					else 
+						sqlStmt += " , ";
+					
+					sEntitlement2 = (cRepoInfo.getString("AUTHTYPE", iIndex).equalsIgnoreCase("U"))? "User" : "Role:"+cRepoInfo.getString("ROLEID", iIndex);
+					sContactEmail = cRepoInfo.getString("ADMINISTRATOR", iIndex) + "@ca.com";
+					sEntitlementAttrs = "resowner:"+ cRepoInfo.getString("RESOURCE_OWNER", iIndex);
+					sUserAttrs = "read=" + (cRepoInfo.getString("ACC_READ", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
+							     "write=" + (cRepoInfo.getString("ACC_WRITE", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
+							     "update=" + (cRepoInfo.getString("ACC_UPDATE", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
+							     "all=" + (cRepoInfo.getString("ACC_ALL", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
+							     "none=" + (cRepoInfo.getString("ACC_READ", iIndex).equalsIgnoreCase("A")? "Y" : "N") ;
+					
+					sValues = "('" + cRepoInfo.getString("APP", iIndex) + "',"+
+							  "'"   + cRepoInfo.getString("APP_INSTANCE", iIndex) + "',"+
+							  "'"   + cRepoInfo.getString("PRODUCT", iIndex) + "',"+
+							  "'"   + sEntitlement2 + "',"+
+							  "'"   + cRepoInfo.getString("RESMASK", iIndex) + "',"+
+							  "'"   + sEntitlementAttrs + "',"+
+							  "'"   + sContactEmail + "',"+
+							  "'"   + cRepoInfo.getString("USERID", iIndex) + "',"+
+							  "'"   + sUserAttrs + "')";
+					
+				    sqlStmt += sValues;
+				    
+				    if (nRecords%nBlock == (nBlock-1)) {
+						pstmt=conn.prepareStatement(sqlStmt);  
+						iResult = pstmt.executeUpdate();
+						if (iResult > 0) 
+							nRecordsWritten += iResult;	
+						sqlStmt = "";
+				    }
+					nRecords++;	
+				}
 			} // loop over records
 			
 			if (!sqlStmt.isEmpty()) {
 				pstmt=conn.prepareStatement(sqlStmt);  
 				iResult = pstmt.executeUpdate();
-				if (iResult > 0) nRecordsWritten += iResult;					
+				if (iResult > 0) 
+					nRecordsWritten += iResult;					
 			}
 			frame.printLog(">>>:"+nRecordsWritten+" Inserted Records Made to DB.");
 		
@@ -243,6 +275,32 @@ public class EndevorRepLdap {
 			// Write out processed records to database
 			JCaContainer cRepoInfo = new JCaContainer();
 			readDBToRepoContainer(cRepoInfo, sDB2Password);
+			
+			// a. Loop over records collapsing APP_INSTANCEs
+			String sEntitlementLast = "";
+			String sInstanceLast = "";
+			int iIndexLast = -1;
+			
+			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount("APP"); iIndex++) {
+				if (!cRepoInfo.getString("APP", iIndex).isEmpty()) {
+					String sInstance = cRepoInfo.getString("APP_INSTANCE", iIndex);
+					String sEntitlement = cRepoInfo.getString("PRODUCT", iIndex)+"/"+
+										  cRepoInfo.getString("AUTHTYPE", iIndex)+"/"+
+				                          cRepoInfo.getString("ROLEID", iIndex)+"/"+
+							              cRepoInfo.getString("RESMASK", iIndex)+"/"+
+							              cRepoInfo.getString("USERID", iIndex);
+					
+					if ( sEntitlement.equalsIgnoreCase(sEntitlementLast) && 
+					    !sInstance.equalsIgnoreCase(sInstanceLast)) {
+						cRepoInfo.setString("APP", "", iIndex);
+						String sNewInstance = sInstanceLast+';'+sInstance;
+						cRepoInfo.setString("APP_INSTANCE", sNewInstance, iIndexLast);
+					}
+					sEntitlementLast = sEntitlement;
+					sInstanceLast = sInstance;
+					iIndexLast = iIndex;
+				}
+			}
 			
 			// Write out processed repository in organization file
 			if (!sOutputFile.isEmpty()) {
