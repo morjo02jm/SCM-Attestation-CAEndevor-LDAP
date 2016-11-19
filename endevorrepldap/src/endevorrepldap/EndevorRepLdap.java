@@ -39,26 +39,29 @@ public class EndevorRepLdap {
 			while (rSet.next()) {
 				String sAuthType = rSet.getString("AUTHTYPE").trim();
 				String sRoleID = (sAuthType.equalsIgnoreCase("R"))? rSet.getString("ROLEID"): "";
-				cRepoInfo.setString("APP",           rSet.getString("APP").trim(),                  iIndex);
-				cRepoInfo.setString("APP_INSTANCE",  rSet.getString("APP_INSTANCE").trim(),         iIndex);
-				cRepoInfo.setString("PRODUCT",       rSet.getString("PRODUCT").trim(),              iIndex);
-				cRepoInfo.setString("AUTHTYPE",      sAuthType,                                     iIndex);
-				cRepoInfo.setString("ROLEID",        sRoleID.trim(),                                iIndex);
-				cRepoInfo.setString("RESMASK",       rSet.getString("RESMASK").trim(),              iIndex);
-				cRepoInfo.setString("ADMINISTRATOR", rSet.getString("ADMINISTRATOR").toLowerCase().trim(),iIndex);
-				cRepoInfo.setString("RESOURCE_OWNER",rSet.getString("RESOURCE_OWNER").toLowerCase().trim(),iIndex);
-				cRepoInfo.setString("USERID",        rSet.getString("USERID").toLowerCase().trim(), iIndex);
-				cRepoInfo.setString("ACC_READ",      rSet.getString("acc_read").trim(),             iIndex);
-				cRepoInfo.setString("ACC_WRITE",     rSet.getString("acc_write").trim(),            iIndex);
-				cRepoInfo.setString("ACC_UPDATE",    rSet.getString("acc_update").trim(),           iIndex);
-				cRepoInfo.setString("ACC_ALL",       rSet.getString("acc_all").trim(),              iIndex);
-				cRepoInfo.setString("ACC_NONE",      rSet.getString("acc_none").trim(),             iIndex);
-				cRepoInfo.setString("ACC_CREATE",    rSet.getString("acc_create").trim(),           iIndex);
-				cRepoInfo.setString("ACC_FETCH",     rSet.getString("acc_fetch").trim(),            iIndex);
-				cRepoInfo.setString("ACC_SCRATCH",   rSet.getString("acc_scratch").trim(),          iIndex);
-				cRepoInfo.setString("ACC_CONTROL",   rSet.getString("acc_control").trim(),          iIndex);
-				cRepoInfo.setString("ACC_INQUIRE",   rSet.getString("acc_inquire").trim(),          iIndex);
-				cRepoInfo.setString("ACC_SET",       rSet.getString("acc_set").trim(),              iIndex);			
+				
+				cRepoInfo.setString("APP",           rSet.getString("APP").trim(),                         iIndex);
+				cRepoInfo.setString("APP_INSTANCE",  rSet.getString("APP_INSTANCE").trim(),                iIndex);
+				cRepoInfo.setString("PRODUCT",       rSet.getString("PRODUCT").trim(),                     iIndex);
+				cRepoInfo.setString("AUTHTYPE",      sAuthType,                                            iIndex);
+				cRepoInfo.setString("ROLEID",        sRoleID.trim(),                                       iIndex);
+				cRepoInfo.setString("RESMASK",       rSet.getString("RESMASK").trim(),                     iIndex);
+				cRepoInfo.setString("CONTACT",       rSet.getString("ADMINISTRATOR").toLowerCase().trim(), iIndex);
+				cRepoInfo.setString("ADMINISTRATOR", rSet.getString("ADMINISTRATOR").toLowerCase().trim(), iIndex);
+				cRepoInfo.setString("DEPARTMENT",    rSet.getString("RESOURCE_OWNER").toLowerCase().trim(),iIndex);
+				cRepoInfo.setString("USERID",        rSet.getString("USERID").toLowerCase().trim(),        iIndex);
+				cRepoInfo.setString("USERNAME",      rSet.getString("FULLNAME").toLowerCase().trim(),      iIndex);
+				cRepoInfo.setString("ACC_READ",      rSet.getString("acc_read").trim(),                    iIndex);
+				cRepoInfo.setString("ACC_WRITE",     rSet.getString("acc_write").trim(),                   iIndex);
+				cRepoInfo.setString("ACC_UPDATE",    rSet.getString("acc_update").trim(),                  iIndex);
+				cRepoInfo.setString("ACC_ALL",       rSet.getString("acc_all").trim(),                     iIndex);
+				cRepoInfo.setString("ACC_NONE",      rSet.getString("acc_none").trim(),                    iIndex);
+				cRepoInfo.setString("ACC_CREATE",    rSet.getString("acc_create").trim(),                  iIndex);
+				cRepoInfo.setString("ACC_FETCH",     rSet.getString("acc_fetch").trim(),                   iIndex);
+				cRepoInfo.setString("ACC_SCRATCH",   rSet.getString("acc_scratch").trim(),                 iIndex);
+				cRepoInfo.setString("ACC_CONTROL",   rSet.getString("acc_control").trim(),                 iIndex);
+				cRepoInfo.setString("ACC_INQUIRE",   rSet.getString("acc_inquire").trim(),                 iIndex);
+				cRepoInfo.setString("ACC_SET",       rSet.getString("acc_set").trim(),                     iIndex);			
 				iIndex++;
 			} // loop over record sets
 			
@@ -85,7 +88,7 @@ public class EndevorRepLdap {
 			FileOutputStream fos = new FileOutputStream(fout);
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
 			String[] keylist = cList.getKeyList();
-			int[] ord = new int[] {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
+			int[] ord = new int[] {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21};
 			
 			String line = "";
 			for (int i=0; i<keylist.length; i++) {
@@ -143,9 +146,10 @@ public class EndevorRepLdap {
 			Connection conn = DriverManager.getConnection(sJDBC);
 	
 			String sApp = "CA Endevor";
+			String sApp2 = "MF20SCM";
 
 			sqlError = "DB. Error deleting previous records.";
-			sqlStmt = "delete from GITHUB_REVIEW where Application='"+ sApp +"'";
+			sqlStmt = "delete from GITHUB_REVIEW where Application in ('"+ sApp +"','"+ sApp2 + "')";
 			pstmt=conn.prepareStatement(sqlStmt);  
 			iResult = pstmt.executeUpdate();
 			if (iResult > 0) 
@@ -163,15 +167,17 @@ public class EndevorRepLdap {
 						sqlStmt += " , ";
 					
 					sEntitlement2 = (cRepoInfo.getString("AUTHTYPE", iIndex).equalsIgnoreCase("U"))? "User" : "Role:"+cRepoInfo.getString("ROLEID", iIndex);
-					sContactEmail = cRepoInfo.getString("ADMINISTRATOR", iIndex) + "@ca.com";
-					sEntitlementAttrs = "resowner:"+ cRepoInfo.getString("RESOURCE_OWNER", iIndex);
-					sUserAttrs = "read=" + (cRepoInfo.getString("ACC_READ", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
-							     "write=" + (cRepoInfo.getString("ACC_WRITE", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
-							     "update=" + (cRepoInfo.getString("ACC_UPDATE", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
-							     "all=" + (cRepoInfo.getString("ACC_ALL", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
-							     "none=" + (cRepoInfo.getString("ACC_READ", iIndex).equalsIgnoreCase("A")? "Y" : "N") ;
+					sContactEmail = cRepoInfo.getString("CONTACT", iIndex) + "@ca.com";
+					sEntitlementAttrs = "resowner="+ cRepoInfo.getString("DEPARTMENT", iIndex)+";"+
+							            "adminby=" + cRepoInfo.getString("ADMINISTRATOR", iIndex);
+					sUserAttrs = "username=" +  cRepoInfo.getString("USERNAME", iIndex) + ";" +
+							     "read="     + (cRepoInfo.getString("ACC_READ", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
+							     "write="    + (cRepoInfo.getString("ACC_WRITE", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
+							     "update="   + (cRepoInfo.getString("ACC_UPDATE", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
+							     "all="      + (cRepoInfo.getString("ACC_ALL", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
+							     "none="     + (cRepoInfo.getString("ACC_READ", iIndex).equalsIgnoreCase("A")? "Y" : "N") ;
 					
-					sValues = "('" + cRepoInfo.getString("APP", iIndex) + "',"+
+					sValues = "('"  + sApp + "',"+
 							  "'"   + cRepoInfo.getString("APP_INSTANCE", iIndex) + "',"+
 							  "'"   + cRepoInfo.getString("PRODUCT", iIndex) + "',"+
 							  "'"   + sEntitlement2 + "',"+
@@ -302,6 +308,109 @@ public class EndevorRepLdap {
 				}
 			}
 			
+			// b. Apply any mapping table for contacts.
+			JCaContainer cContact = new JCaContainer();
+			frame.processInputListGeneric(cContact, "EndevorContacts.csv", ',');
+			
+			for (int iIndex=0; iIndex<cContact.getKeyElementCount("ENTITYNAME"); iIndex++) {
+				String sBy      = cContact.getString("BY", iIndex);
+				String sName    = cContact.getString("ENTITYNAME", iIndex);
+				String sContact = cContact.getString("CONTACT", iIndex);
+				
+				int[] iDept = (sBy.equals("DEPT"))? cRepoInfo.find("DEPARTMENT", sName) : cRepoInfo.find("PRODUCT", sName);				
+				for (int j=0; j<iDept.length; j++) {
+					cRepoInfo.setString("CONTACT", sContact, iDept[j]);
+				}
+			}
+			
+			// c. Loop through the Container for Contacts
+			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount("APP"); iIndex++) {
+				if (!cRepoInfo.getString("APP", iIndex).isEmpty()) {
+					String sID = cRepoInfo.getString("CONTACT", iIndex);
+					int[] iLDAP = cLDAP.find("sAMAccountName", sID);
+					
+					if (iLDAP.length == 0) {
+			    		int[] iContacts = cRepoInfo.find("CONTACT", sID); 	
+			    		String sView = "";
+			    		
+						for (int i=0; i<iContacts.length; i++) {
+							String sApp = cRepoInfo.getString("APP", iContacts[i]);
+							if (!sApp.isEmpty()) {
+								sView = cRepoInfo.getString("PRODUCT", iContacts[i]);
+								
+					    		if (sProblems.isEmpty()) sProblems = "<ul> ";			    		
+					    		sProblems+= "<li>The Endevor contact user id, <b>"+sID+"</b>, for view, <b>"+sView+"</b>, references a terminated user.</li>\n";
+					    		
+					    		for (int j=i+1; j<iContacts.length; j++) {
+					    			if (sView.contentEquals(cRepoInfo.getString("PRODUCT", iContacts[j]))) {
+					    				cRepoInfo.setString("APP", "", iContacts[j]);
+					    			}
+					    		}
+							}
+							cRepoInfo.setString("APP", "", iContacts[i]);
+						}
+					}
+				}
+			}
+			
+			// d. Look for terminated users
+			JCaContainer cUsers = new JCaContainer();
+			frame.processInputListGeneric(cUsers, "EndevorUsers.csv", ',');
+			
+			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount("APP"); iIndex++) {
+				if (!cRepoInfo.getString("APP", iIndex).isEmpty()) {
+					boolean bLocalGeneric=false;
+					String sID  = cRepoInfo.getString("USERID", iIndex);
+					if (sID.contains("?")) 
+						sID = sID.substring(0, sID.indexOf('?'));
+					String sRealID = sID;
+					String sUseID  = sID;
+
+					int[] iRepl = cUsers.find("TOPSECRET", sID);
+					
+					if (iRepl.length > 0) {
+						sRealID = cUsers.getString("CADOMAIN", iRepl[0]);
+						if (sRealID.equals("Generic")) {
+							bLocalGeneric = true;
+						}
+						else {
+							sUseID = sRealID;
+						}
+					}
+					
+					int[] iLDAP = cLDAP.find("sAMAccountName", sUseID);
+					
+					if (iLDAP.length == 0 && !bLocalGeneric) {
+			    		int[] iUsers = cRepoInfo.find("USERID", sID); 	
+
+			    		if (!bLocalGeneric) {
+							for (int i=0; i<iUsers.length; i++) {
+								String sApp = cRepoInfo.getString("APP", iUsers[i]);
+								if (!sApp.isEmpty()) {
+						    		if (sProblems.isEmpty()) sProblems = "<ul> ";			    		
+						    		sProblems+= "<li>The Endevor user id, <b>"+sUseID+"</b>, references a terminated or unmapped user.</li>\n";									
+						    		
+						    		for (int j=i+1; j<iUsers.length; j++) {
+						    			cRepoInfo.setString("APP", "", iUsers[j]);
+						    		}
+								}
+								cRepoInfo.setString("APP", "", iUsers[i]);
+							}
+			    		}
+					} 
+					else if (bLocalGeneric || !sID.equalsIgnoreCase(sRealID)){
+			    		int[] iUsers = cRepoInfo.find("USERID", sID); 	
+			    		for (int i=0; i<iUsers.length; i++) {
+			    			cRepoInfo.setString("USERID", 
+			    					            (bLocalGeneric? sUseID+"?" : sUseID ),
+			    					            i);
+			    		}
+					}
+				}
+			}
+			
+			
+			
 			// Write out processed repository in organization file
 			if (!sOutputFile.isEmpty()) {
 				writeCSVFileFromListGeneric(cRepoInfo, sOutputFile, ',');					
@@ -318,7 +427,7 @@ public class EndevorRepLdap {
 				sSubject = "Notification of Problematic CA Endevor Contacts";
 				sScope = "SourceMinder DB2 Database";
 				
-		        String bodyText = frame.readTextResource("Notification_of_Noncompliant_GitHub_Contacts.txt", sScope, sProblems, sProblems);								        								          
+		        String bodyText = frame.readTextResource("Notification_of_Noncompliant_Endevor_Contacts.txt", sScope, sProblems, sProblems);								        								          
 		        frame.sendEmailNotification(email, sSubject, bodyText, true);
 			} // had some notifications
 			
