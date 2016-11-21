@@ -1,8 +1,5 @@
 package endevorrepldap;
 
-
-//import com.ca.harvest.jhsdk.hutils.*;
-
 import java.sql.*;
 
 import java.util.*;
@@ -15,6 +12,10 @@ import commonldap.JCaContainer;
 public class EndevorRepLdap {
 	private static int iReturnCode = 0;
 	private static CommonLdap frame;
+	
+	void EndevorRepLdap() {
+		// Leaving empty		
+	}
 		
 	private static void readDBToRepoContainer(JCaContainer cRepoInfo, 
 			                                  String sDB2Password) {
@@ -38,7 +39,7 @@ public class EndevorRepLdap {
 			
 			while (rSet.next()) {
 				String sAuthType = rSet.getString("AUTHTYPE").trim();
-				String sRoleID = (sAuthType.equalsIgnoreCase("R"))? rSet.getString("ROLEID"): "";
+				String sRoleID = sAuthType.equalsIgnoreCase("R")? rSet.getString("ROLEID"): "";
 				
 				cRepoInfo.setString("APP",           rSet.getString("APP").trim(),                         iIndex);
 				cRepoInfo.setString("APP_INSTANCE",  rSet.getString("APP_INSTANCE").trim(),                iIndex);
@@ -166,7 +167,7 @@ public class EndevorRepLdap {
 					else 
 						sqlStmt += " , ";
 					
-					sEntitlement2 = (cRepoInfo.getString("AUTHTYPE", iIndex).equalsIgnoreCase("U"))? "User" : "Role:"+cRepoInfo.getString("ROLEID", iIndex);
+					sEntitlement2 = cRepoInfo.getString("AUTHTYPE", iIndex).equalsIgnoreCase("U")? "User" : "Role:"+cRepoInfo.getString("ROLEID", iIndex);
 					sContactEmail = cRepoInfo.getString("CONTACT", iIndex) + "@ca.com";
 					sEntitlementAttrs = "resowner="+ cRepoInfo.getString("DEPARTMENT", iIndex)+";"+
 							            "adminby=" + cRepoInfo.getString("ADMINISTRATOR", iIndex);
@@ -317,7 +318,7 @@ public class EndevorRepLdap {
 				String sName    = cContact.getString("ENTITYNAME", iIndex);
 				String sContact = cContact.getString("CONTACT", iIndex);
 				
-				int[] iDept = (sBy.equals("DEPT"))? cRepoInfo.find("DEPARTMENT", sName) : cRepoInfo.find("PRODUCT", sName);				
+				int[] iDept = sBy.equals("DEPT")? cRepoInfo.find("DEPARTMENT", sName) : cRepoInfo.find("PRODUCT", sName);				
 				for (int j=0; j<iDept.length; j++) {
 					cRepoInfo.setString("CONTACT", sContact, iDept[j]);
 				}
@@ -338,7 +339,8 @@ public class EndevorRepLdap {
 							if (!sApp.isEmpty()) {
 								sView = cRepoInfo.getString("PRODUCT", iContacts[i]);
 								
-					    		if (sProblems.isEmpty()) sProblems = "<ul> ";			    		
+					    		if (sProblems.isEmpty()) 
+					    			sProblems = "<ul> ";			    		
 					    		sProblems+= "<li>The Endevor contact user id, <b>"+sID+"</b>, for view, <b>"+sView+"</b>, references a terminated user.</li>\n";
 					    		
 					    		for (int j=i+1; j<iContacts.length; j++) {
@@ -387,7 +389,8 @@ public class EndevorRepLdap {
 							for (int i=0; i<iUsers.length; i++) {
 								String sApp = cRepoInfo.getString("APP", iUsers[i]);
 								if (!sApp.isEmpty()) {
-						    		if (sProblems.isEmpty()) sProblems = "<ul> ";			    		
+						    		if (sProblems.isEmpty()) 
+						    			sProblems = "<ul> ";			    		
 						    		sProblems+= "<li>The Endevor user id, <b>"+sUseID+"</b>, references a terminated or unmapped user.</li>\n";									
 						    		
 						    		for (int j=i+1; j<iUsers.length; j++) {
@@ -402,7 +405,7 @@ public class EndevorRepLdap {
 			    		int[] iUsers = cRepoInfo.find("USERID", sID); 	
 			    		for (int i=0; i<iUsers.length; i++) {
 			    			cRepoInfo.setString("USERID", 
-			    					            (bLocalGeneric? sUseID+"?" : sUseID ),
+			    					            (bLocalGeneric? sUseID+"?" : sUseID),
 			    					            i);
 			    		}
 					}
