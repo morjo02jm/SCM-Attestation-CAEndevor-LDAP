@@ -40,6 +40,7 @@ public class EndevorRepLdap {
 			while (rSet.next()) {
 				String sAuthType = rSet.getString("AUTHTYPE").trim();
 				String sRoleID = sAuthType.equalsIgnoreCase("R")? rSet.getString("ROLEID"): "";
+				String sFullName = rSet.getString("FULLNAME").toLowerCase().trim();
 				
 				cRepoInfo.setString("APP",           rSet.getString("APP").trim(),                         iIndex);
 				cRepoInfo.setString("APP_INSTANCE",  rSet.getString("APP_INSTANCE").trim(),                iIndex);
@@ -51,7 +52,7 @@ public class EndevorRepLdap {
 				cRepoInfo.setString("ADMINISTRATOR", rSet.getString("ADMINISTRATOR").toLowerCase().trim(), iIndex);
 				cRepoInfo.setString("DEPARTMENT",    rSet.getString("RESOURCE_OWNER").toLowerCase().trim(),iIndex);
 				cRepoInfo.setString("USERID",        rSet.getString("USERID").toLowerCase().trim(),        iIndex);
-				cRepoInfo.setString("USERNAME",      rSet.getString("FULLNAME").toLowerCase().trim(),      iIndex);
+				cRepoInfo.setString("USERNAME",      rSet.getString("FULLNAME").trim().replace(',', '|'),  iIndex);
 				cRepoInfo.setString("ACC_READ",      rSet.getString("acc_read").trim(),                    iIndex);
 				cRepoInfo.setString("ACC_WRITE",     rSet.getString("acc_write").trim(),                   iIndex);
 				cRepoInfo.setString("ACC_UPDATE",    rSet.getString("acc_update").trim(),                  iIndex);
@@ -391,7 +392,7 @@ public class EndevorRepLdap {
 								if (!sApp.isEmpty()) {
 						    		if (sProblems.isEmpty()) 
 						    			sProblems = "<ul> ";			    		
-						    		sProblems+= "<li>The Endevor user id, <b>"+sUseID+"</b>, references a terminated or unmapped user.</li>\n";									
+						    		sProblems+= "<li>The Endevor user id, <b>"+sID+"</b>, references a terminated or unmapped user.</li>\n";									
 						    		
 						    		for (int j=i+1; j<iUsers.length; j++) {
 						    			cRepoInfo.setString("APP", "", iUsers[j]);
