@@ -1,9 +1,7 @@
 package endevorrepldap;
 
 import java.sql.*;
-
 import java.util.*;
-
 import java.io.*;
 
 import commonldap.CommonLdap;
@@ -13,7 +11,7 @@ public class EndevorRepLdap {
 	private static int iReturnCode = 0;
 	private static CommonLdap frame;
 	
-	void EndevorRepLdap() {
+	EndevorRepLdap() {
 		// Leaving empty		
 	}
 		
@@ -40,7 +38,6 @@ public class EndevorRepLdap {
 			while (rSet.next()) {
 				String sAuthType = rSet.getString("AUTHTYPE").trim();
 				String sRoleID = sAuthType.equalsIgnoreCase("R")? rSet.getString("ROLEID"): "";
-				String sFullName = rSet.getString("FULLNAME").toLowerCase().trim();
 				
 				cRepoInfo.setString("APP",           rSet.getString("APP").trim(),                         iIndex);
 				cRepoInfo.setString("APP_INSTANCE",  rSet.getString("APP_INSTANCE").trim(),                iIndex);
