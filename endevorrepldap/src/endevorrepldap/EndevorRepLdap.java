@@ -30,8 +30,8 @@ public class EndevorRepLdap {
 			Connection conn = DriverManager.getConnection(sJDBC);
 	
 			sqlError = "DB2. Error reading Endevor records from CIA database.";
-			//sqlStmt = frame.readTextResource("EndevorDBQuery.txt", "= 'VIEW'", "", "");
-			sqlStmt = frame.readTextResource("EndevorDBQuery.txt", "IS NOT NULL", "", "");
+			//sqlStmt = frame.readTextResource("EndevorDBQuery.txt", "= 'VIEW'", "", "", "");
+			sqlStmt = frame.readTextResource("EndevorDBQuery.txt", "IS NOT NULL", "", "", "");
 			pstmt=conn.prepareStatement(sqlStmt); 
 			rSet = pstmt.executeQuery();
 			
@@ -68,62 +68,17 @@ public class EndevorRepLdap {
 
 		} catch (ClassNotFoundException e) {
 			iReturnCode = 101;
-		    System.err.println(sqlError);
-		    System.err.println(e);			
+		    frame.printErr(sqlError);
+		    frame.printErr(e.getLocalizedMessage());			
 		    System.exit(iReturnCode);
 		} catch (SQLException e) {     
 			iReturnCode = 102;
-		    System.err.println(sqlError);
-		    System.err.println(e);			
+		    frame.printErr(sqlError);
+		    frame.printErr(e.getLocalizedMessage());			
 		    System.exit(iReturnCode);
 		}	
 	}
-	
-	private static void writeCSVFileFromListGeneric( JCaContainer cList, String sOutputFileName, char sep)
-	{
-		File fout = new File(sOutputFileName);
 		
-		try {
-			FileOutputStream fos = new FileOutputStream(fout);
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
-			String[] keylist = cList.getKeyList();
-			int[] ord = new int[] {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21};
-			
-			String line = "";
-			for (int i=0; i<keylist.length; i++) {
-				if (!line.isEmpty()) 
-					line += sep;
-				line += keylist[ord[i]];
-			}
-			bw.write(line);
-			bw.newLine();
-			
-			for (int i=0; i < cList.getKeyElementCount(keylist[0]); i++) {
-				if (!cList.getString("APP", i).isEmpty()) 
-				{
-					line = "";
-					for (int j=0; j<keylist.length; j++) {
-						if (!line.isEmpty())
-							line += sep;
-						line += cList.getString(keylist[ord[j]], i);
-					}
-					bw.write(line);
-					bw.newLine();
-				}
-			}
-		 
-			bw.close();
-		} catch (FileNotFoundException e) {             
-			iReturnCode = 201;
-		    System.err.println(e);			
-		    System.exit(iReturnCode);
-		} catch (IOException e) {             
-			iReturnCode = 202;
-		    System.err.println(e);			
-		    System.exit(iReturnCode);
-		}
-	}	
-	
 	private static void writeDBFromRepoContainer(JCaContainer cRepoInfo, String sImagDBPassword) {
 		PreparedStatement pstmt = null; 
 		String sqlStmt;
@@ -209,13 +164,13 @@ public class EndevorRepLdap {
 		
 		} catch (ClassNotFoundException e) {
 			iReturnCode = 301;
-		    System.err.println(sqlError);
-		    System.err.println(e);			
+		    frame.printErr(sqlError);
+		    frame.printErr(e.getLocalizedMessage());			
 		    System.exit(iReturnCode);
 		} catch (SQLException e) {     
 			iReturnCode = 302;
-		    System.err.println(sqlError);
-		    System.err.println(e);			
+		    frame.printErr(sqlError);
+		    frame.printErr(e.getLocalizedMessage());			
 		    System.exit(iReturnCode);
 		}
 	} // writeDBFromRepoContainer		
@@ -309,7 +264,7 @@ public class EndevorRepLdap {
 			
 			// b. Apply any mapping table for contacts.
 			JCaContainer cContact = new JCaContainer();
-			frame.processInputListGeneric(cContact, "EndevorContacts.csv", ',');
+			frame.readInputListGeneric(cContact, "EndevorContacts.csv", ',');
 			
 			for (int iIndex=0; iIndex<cContact.getKeyElementCount("ENTITYNAME"); iIndex++) {
 				String sBy      = cContact.getString("BY", iIndex);
@@ -355,7 +310,7 @@ public class EndevorRepLdap {
 			
 			// d. Look for terminated users
 			JCaContainer cUsers = new JCaContainer();
-			frame.processInputListGeneric(cUsers, "EndevorUsers.csv", ',');
+			frame.readInputListGeneric(cUsers, "EndevorUsers.csv", ',');
 			
 			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount("APP"); iIndex++) {
 				if (!cRepoInfo.getString("APP", iIndex).isEmpty()) {
@@ -414,7 +369,7 @@ public class EndevorRepLdap {
 			
 			// Write out processed repository in organization file
 			if (!sOutputFile.isEmpty()) {
-				writeCSVFileFromListGeneric(cRepoInfo, sOutputFile, ',');					
+				frame.writeCSVFileFromListGeneric(cRepoInfo, sOutputFile, ',');					
 			}
 			
 			// Write out processed records to database
@@ -428,13 +383,13 @@ public class EndevorRepLdap {
 				sSubject = "Notification of Problematic CA Endevor Contacts";
 				sScope = "SourceMinder DB2 Database";
 				
-		        String bodyText = frame.readTextResource("Notification_of_Noncompliant_Endevor_Contacts.txt", sScope, sProblems, sProblems);								        								          
+		        String bodyText = frame.readTextResource("Notification_of_Noncompliant_Endevor_Contacts.txt", sScope, sProblems, "", "");								        								          
 		        frame.sendEmailNotification(email, sSubject, bodyText, true);
 			} // had some notifications
 			
 	     } catch (Exception e) {
 				iReturnCode = 1;
-			    System.err.println(e);			
+			    frame.printErr(e.getLocalizedMessage());			
 			    System.exit(iReturnCode);		    	    	 
 	     }	// try/catch blocks         
 	}
