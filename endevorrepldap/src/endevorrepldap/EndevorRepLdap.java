@@ -16,8 +16,42 @@ public class EndevorRepLdap {
 	private static String sTagContact = "CONTACT";
 	private static String sTagApp     = "APP";
 	
+	// LDAP columns
+	private static String sTagPmfkey       = "sAMAccountName";
+	
+	// Notification
+	static String tagUL = "<ul> ";
+	
 	EndevorRepLdap() {
 		// Leaving empty		
+	}
+	
+	private static String[] readContactList(String sContactList) {
+		List<String> lObj = new ArrayList<String>();
+		
+		boolean bFound = false;		
+		String sToken = sContactList;
+		while (!bFound && !sToken.isEmpty()) {
+			int nIndex = sToken.indexOf(';');
+			String sNextContact = sToken;
+			if (nIndex >= 0) {
+				sNextContact = sToken.substring(0, nIndex);
+				sToken = sToken.substring(nIndex+1);
+			}
+			else 
+				sToken = "";
+			
+			lObj.add(sNextContact);
+		} // loop over broker specifications
+		
+		String[] lStrings = new String[lObj.size()];
+		ListIterator<String> lIter = lObj.listIterator();
+		int i=0;
+		
+		while (lIter.hasNext()) {
+			lStrings[i++] = (String)lIter.next();
+		}
+		return lStrings;		
 	}
 		
 	private static void readDBToRepoContainer(JCaContainer cRepoInfo, 
@@ -126,7 +160,16 @@ public class EndevorRepLdap {
 						sqlStmt += " , ";
 					
 					sEntitlement2 = cRepoInfo.getString("AUTHTYPE", iIndex).equalsIgnoreCase("U")? "User" : "Role:"+cRepoInfo.getString("ROLEID", iIndex);
-					sContactEmail = cRepoInfo.getString(sTagContact, iIndex) + "@ca.com";
+					sContactEmail = "";
+					String[] aContacts = readContactList(cRepoInfo.getString(sTagContact, iIndex));
+					for (int j=0; j<aContacts.length; j++) {
+						if (!sContactEmail.isEmpty())
+							sContactEmail += ";";
+						if (aContacts[j].equalsIgnoreCase("toolsadmin"))
+							sContactEmail += "Toolsadmin@ca.com";
+						else
+							sContactEmail += aContacts[j]+"@ca.com";
+					}
 					sEntitlementAttrs = "resowner="+ cRepoInfo.getString("DEPARTMENT", iIndex)+";"+
 							            "adminby=" + cRepoInfo.getString("ADMINISTRATOR", iIndex);
 					sUserAttrs = "username=" +  cRepoInfo.getString("USERNAME", iIndex) + ";" +
@@ -303,7 +346,7 @@ public class EndevorRepLdap {
 					}
 					
 					for (int k=0; k<sProjects.length; k++) {
-						if (sProjects[k].isEmpty()) {
+						if (sProjects[k].isEmpty()) { // shouldn't drop in here
 							// process all the unassigned approvers in the project
 							for (int kIndex=0; kIndex<cRepoInfo.getKeyElementCount(sTagProject); kIndex++) {
 								if (cRepoInfo.getString(sTagContact, kIndex).isEmpty()) {
@@ -327,36 +370,54 @@ public class EndevorRepLdap {
 					} // loop over project prefixes
 				} 	// broker record exists in contact info					
 			} // loop over contact records
+						
+			// Process all end of life projects (make them inactive projects in Harvest)
+			for (int k=0; k<cRepoInfo.getKeyElementCount(sTagProject); k++) {
+				String sProject = cRepoInfo.getString(sTagProject, k);
+				if (cRepoInfo.getString(sTagContact, k).equalsIgnoreCase("toolsadmin") &&
+					!cRepoInfo.getString(sTagApp, k).isEmpty()) {
+		    		if (sProblems.isEmpty()) sProblems = tagUL;
+		    		sProblems+= "<li>The product, <b>"+sProject+"</b> has no contact information or is End of Life.</li>\n";
+		    		
+					int[] iProjects = cRepoInfo.find(sTagProject, sProject);
+					for (int iIndex=0; iIndex<iProjects.length; iIndex++) {
+						cRepoInfo.setString(sTagApp, "", iProjects[iIndex]);
+					}
+				} // end of life entry					
+			} //loop over broker entries
 			
 			
 			// c. Loop through the Container for Contacts
 			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount(sTagApp); iIndex++) {
 				if (!cRepoInfo.getString(sTagApp, iIndex).isEmpty()) {
-					String sID = cRepoInfo.getString(sTagContact, iIndex);
-					int[] iLDAP = cLDAP.find("sAMAccountName", sID);
+					String[] sID = readContactList(cRepoInfo.getString(sTagContact, iIndex));
 					
-					if (iLDAP.length == 0) {
-			    		int[] iContacts = cRepoInfo.find(sTagContact, sID); 	
-			    		String sView = "";
-			    		
-						for (int i=0; i<iContacts.length; i++) {
-							String sApp = cRepoInfo.getString(sTagApp, iContacts[i]);
-							if (!sApp.isEmpty()) {
-								sView = cRepoInfo.getString(sTagProject, iContacts[i]);
-								
-					    		if (sProblems.isEmpty()) 
-					    			sProblems = "<ul> ";			    		
-					    		sProblems+= "<li>The Endevor contact user id, <b>"+sID+"</b>, for view, <b>"+sView+"</b>, references a terminated user.</li>\n";
-					    		
-					    		for (int j=i+1; j<iContacts.length; j++) {
-					    			if (sView.contentEquals(cRepoInfo.getString(sTagProject, iContacts[j]))) {
-					    				cRepoInfo.setString(sTagApp, "", iContacts[j]);
-					    			}
-					    		}
-							}
-							cRepoInfo.setString(sTagApp, "", iContacts[i]);
-						}
-					}
+					for (int m=0; m<sID.length; m++) {
+						int[] iLDAP = cLDAP.find(sTagPmfkey, sID[m]);
+						
+						if (iLDAP.length == 0) {
+				    		int[] iContacts = cRepoInfo.find(sTagContact, sID[m]); 	
+				    		String sView = "";
+				    		
+							for (int i=0; i<iContacts.length; i++) {
+								String sApp = cRepoInfo.getString(sTagApp, iContacts[i]);
+								if (!sApp.isEmpty()) {
+									sView = cRepoInfo.getString(sTagProject, iContacts[i]);
+									
+						    		if (sProblems.isEmpty()) 
+						    			sProblems = "<ul> ";			    		
+						    		sProblems+= "<li>The Endevor contact user id, <b>"+sID+"</b>, for view, <b>"+sView+"</b>, references a terminated user.</li>\n";
+						    		
+						    		for (int j=i+1; j<iContacts.length; j++) {
+						    			if (sView.contentEquals(cRepoInfo.getString(sTagProject, iContacts[j]))) {
+						    				cRepoInfo.setString(sTagApp, "", iContacts[j]);
+						    			}
+						    		}
+								} 
+								cRepoInfo.setString(sTagApp, "", iContacts[i]);
+							} // loop over repo records with particular contact
+						} // invalid contact					
+					} // loop over Approvers
 				}
 			}
 			
@@ -385,7 +446,7 @@ public class EndevorRepLdap {
 						}
 					}
 					
-					int[] iLDAP = cLDAP.find("sAMAccountName", sUseID);
+					int[] iLDAP = cLDAP.find(sTagPmfkey, sUseID);
 					
 					if (iLDAP.length == 0 && !bLocalGeneric) {
 			    		int[] iUsers = cRepoInfo.find("USERID", sID); 	
