@@ -26,33 +26,6 @@ public class EndevorRepLdap {
 		// Leaving empty		
 	}
 	
-	private static String[] readContactList(String sContactList) {
-		List<String> lObj = new ArrayList<String>();
-		
-		boolean bFound = false;		
-		String sToken = sContactList;
-		while (!bFound && !sToken.isEmpty()) {
-			int nIndex = sToken.indexOf(';');
-			String sNextContact = sToken;
-			if (nIndex >= 0) {
-				sNextContact = sToken.substring(0, nIndex);
-				sToken = sToken.substring(nIndex+1);
-			}
-			else 
-				sToken = "";
-			
-			lObj.add(sNextContact);
-		} // loop over broker specifications
-		
-		String[] lStrings = new String[lObj.size()];
-		ListIterator<String> lIter = lObj.listIterator();
-		int i=0;
-		
-		while (lIter.hasNext()) {
-			lStrings[i++] = (String)lIter.next();
-		}
-		return lStrings;		
-	}
 		
 	private static void readDBToRepoContainer(JCaContainer cRepoInfo, 
 			                                  String sDB2Password) {
@@ -161,7 +134,7 @@ public class EndevorRepLdap {
 					
 					sEntitlement2 = cRepoInfo.getString("AUTHTYPE", iIndex).equalsIgnoreCase("U")? "User" : "Role:"+cRepoInfo.getString("ROLEID", iIndex);
 					sContactEmail = "";
-					String[] aContacts = readContactList(cRepoInfo.getString(sTagContact, iIndex));
+					String[] aContacts = frame.readAssignedApprovers(cRepoInfo.getString(sTagContact, iIndex));
 					for (int j=0; j<aContacts.length; j++) {
 						if (!sContactEmail.isEmpty())
 							sContactEmail += ";";
@@ -390,7 +363,7 @@ public class EndevorRepLdap {
 			// c. Loop through the Container for Contacts
 			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount(sTagApp); iIndex++) {
 				if (!cRepoInfo.getString(sTagApp, iIndex).isEmpty()) {
-					String[] sID = readContactList(cRepoInfo.getString(sTagContact, iIndex));
+					String[] sID = frame.readAssignedApprovers(cRepoInfo.getString(sTagContact, iIndex));
 					
 					for (int m=0; m<sID.length; m++) {
 						int[] iLDAP = cLDAP.find(sTagPmfkey, sID[m]);
