@@ -10,6 +10,11 @@ import commonldap.JCaContainer;
 public class EndevorRepLdap {
 	private static int iReturnCode = 0;
 	private static CommonLdap frame;
+
+// Repository container headings	
+	private static String sTagProject = "PRODUCT";
+	private static String sTagContact = "CONTACT";
+	private static String sTagApp     = "APP";
 	
 	EndevorRepLdap() {
 		// Leaving empty		
@@ -113,15 +118,15 @@ public class EndevorRepLdap {
 			int nRecordsWritten = 0;
 			int nBlock = 100;
 			
-			for (int iIndex=0,nRecords=0; iIndex<cRepoInfo.getKeyElementCount("APP"); iIndex++) {
-				if (!cRepoInfo.getString("APP", iIndex).isEmpty()) { 
+			for (int iIndex=0,nRecords=0; iIndex<cRepoInfo.getKeyElementCount(sTagApp); iIndex++) {
+				if (!cRepoInfo.getString(sTagApp, iIndex).isEmpty()) { 
 					if (nRecords%nBlock == 0)
 						sqlStmt = sqlStmt0;
 					else 
 						sqlStmt += " , ";
 					
 					sEntitlement2 = cRepoInfo.getString("AUTHTYPE", iIndex).equalsIgnoreCase("U")? "User" : "Role:"+cRepoInfo.getString("ROLEID", iIndex);
-					sContactEmail = cRepoInfo.getString("CONTACT", iIndex) + "@ca.com";
+					sContactEmail = cRepoInfo.getString(sTagContact, iIndex) + "@ca.com";
 					sEntitlementAttrs = "resowner="+ cRepoInfo.getString("DEPARTMENT", iIndex)+";"+
 							            "adminby=" + cRepoInfo.getString("ADMINISTRATOR", iIndex);
 					sUserAttrs = "username=" +  cRepoInfo.getString("USERNAME", iIndex) + ";" +
@@ -133,7 +138,7 @@ public class EndevorRepLdap {
 					
 					sValues = "('"  + sApp + "',"+
 							  "'"   + cRepoInfo.getString("APP_INSTANCE", iIndex) + "',"+
-							  "'"   + cRepoInfo.getString("PRODUCT", iIndex) + "',"+
+							  "'"   + cRepoInfo.getString(sTagProject, iIndex) + "',"+
 							  "'"   + sEntitlement2 + "',"+
 							  "'"   + cRepoInfo.getString("RESMASK", iIndex) + "',"+
 							  "'"   + sEntitlementAttrs + "',"+
@@ -241,10 +246,10 @@ public class EndevorRepLdap {
 			String sInstanceLast = "";
 			int iIndexLast = -1;
 			
-			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount("APP"); iIndex++) {
-				if (!cRepoInfo.getString("APP", iIndex).isEmpty()) {
+			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount(sTagApp); iIndex++) {
+				if (!cRepoInfo.getString(sTagApp, iIndex).isEmpty()) {
 					String sInstance = cRepoInfo.getString("APP_INSTANCE", iIndex);
-					String sEntitlement = cRepoInfo.getString("PRODUCT", iIndex)+"/"+
+					String sEntitlement = cRepoInfo.getString(sTagProject, iIndex)+"/"+
 										  cRepoInfo.getString("AUTHTYPE", iIndex)+"/"+
 				                          cRepoInfo.getString("ROLEID", iIndex)+"/"+
 							              cRepoInfo.getString("RESMASK", iIndex)+"/"+
@@ -252,7 +257,7 @@ public class EndevorRepLdap {
 					
 					if ( sEntitlement.equalsIgnoreCase(sEntitlementLast) && 
 					    !sInstance.equalsIgnoreCase(sInstanceLast)) {
-						cRepoInfo.setString("APP", "", iIndex);
+						cRepoInfo.setString(sTagApp, "", iIndex);
 						String sNewInstance = sInstanceLast+';'+sInstance;
 						cRepoInfo.setString("APP_INSTANCE", sNewInstance, iIndexLast);
 					}
@@ -264,45 +269,92 @@ public class EndevorRepLdap {
 			
 			// b. Apply any mapping table for contacts.
 			JCaContainer cContact = new JCaContainer();
+/*
 			frame.readInputListGeneric(cContact, "EndevorContacts.csv", ',');
 			
 			for (int iIndex=0; iIndex<cContact.getKeyElementCount("ENTITYNAME"); iIndex++) {
 				String sBy      = cContact.getString("BY", iIndex);
 				String sName    = cContact.getString("ENTITYNAME", iIndex);
-				String sContact = cContact.getString("CONTACT", iIndex);
+				String sContact = cContact.getString(sTagContact, iIndex);
 				
-				int[] iDept = sBy.equals("DEPT")? cRepoInfo.find("DEPARTMENT", sName) : cRepoInfo.find("PRODUCT", sName);				
+				int[] iDept = sBy.equals("DEPT")? cRepoInfo.find("DEPARTMENT", sName) : cRepoInfo.find(sTagProject, sName);				
 				for (int j=0; j<iDept.length; j++) {
-					cRepoInfo.setString("CONTACT", sContact, iDept[j]);
+					cRepoInfo.setString(sTagContact, sContact, iDept[j]);
 				}
 			}
+*/
+			frame.readSourceMinderContacts(cContact, "Endevor");
+			// Apply contact information for records
+			// a. from SourceMinder Contacts
+			boolean bFound = false;
+
+			for (int iIndex=0; iIndex<cContact.getKeyElementCount("Approver"); iIndex++) {
+				String sLocation = cContact.getString("Location", iIndex).toLowerCase();
+				String[] sProjects = frame.readAssignedBrokerProjects(sLocation, "");
+				String[] sApprovers = frame.readAssignedApprovers(cContact.getString("Approver", iIndex));
+				boolean bActive = cContact.getString("Active", iIndex).contentEquals("Y");
+				String sReleases = cContact.getString("Release", iIndex);
+				
+				if (sProjects.length > 0) {
+					String sApprover = "";
+					for (int jIndex=0; jIndex<sApprovers.length; jIndex++) {
+						if (!sApprover.isEmpty()) sApprover += ";";
+						sApprover += sApprovers[jIndex];
+					}
+					
+					for (int k=0; k<sProjects.length; k++) {
+						if (sProjects[k].isEmpty()) {
+							// process all the unassigned approvers in the project
+							for (int kIndex=0; kIndex<cRepoInfo.getKeyElementCount(sTagProject); kIndex++) {
+								if (cRepoInfo.getString(sTagContact, kIndex).isEmpty()) {
+									cRepoInfo.setString(sTagContact, bActive? sApprover : "toolsadmin", kIndex);
+									bFound = true;
+								}
+							}
+						}
+						else { // process each project prefix 
+							String sPrefix = sProjects[k].replace("*", "").toLowerCase();
+							
+							for (int kIndex=0; kIndex<cRepoInfo.getKeyElementCount(sTagProject); kIndex++) {
+								String sProject = cRepoInfo.getString(sTagProject, kIndex).toLowerCase();
+								if (sProject.startsWith(sPrefix)) {
+									boolean bIsActive = frame.processProjectReleases(sProject, sReleases, bActive);
+									cRepoInfo.setString(sTagContact, bIsActive? sApprover : "toolsadmin", kIndex);
+									bFound = true;
+								}
+							}											
+						}  // list of prefixes present
+					} // loop over project prefixes
+				} 	// broker record exists in contact info					
+			} // loop over contact records
+			
 			
 			// c. Loop through the Container for Contacts
-			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount("APP"); iIndex++) {
-				if (!cRepoInfo.getString("APP", iIndex).isEmpty()) {
-					String sID = cRepoInfo.getString("CONTACT", iIndex);
+			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount(sTagApp); iIndex++) {
+				if (!cRepoInfo.getString(sTagApp, iIndex).isEmpty()) {
+					String sID = cRepoInfo.getString(sTagContact, iIndex);
 					int[] iLDAP = cLDAP.find("sAMAccountName", sID);
 					
 					if (iLDAP.length == 0) {
-			    		int[] iContacts = cRepoInfo.find("CONTACT", sID); 	
+			    		int[] iContacts = cRepoInfo.find(sTagContact, sID); 	
 			    		String sView = "";
 			    		
 						for (int i=0; i<iContacts.length; i++) {
-							String sApp = cRepoInfo.getString("APP", iContacts[i]);
+							String sApp = cRepoInfo.getString(sTagApp, iContacts[i]);
 							if (!sApp.isEmpty()) {
-								sView = cRepoInfo.getString("PRODUCT", iContacts[i]);
+								sView = cRepoInfo.getString(sTagProject, iContacts[i]);
 								
 					    		if (sProblems.isEmpty()) 
 					    			sProblems = "<ul> ";			    		
 					    		sProblems+= "<li>The Endevor contact user id, <b>"+sID+"</b>, for view, <b>"+sView+"</b>, references a terminated user.</li>\n";
 					    		
 					    		for (int j=i+1; j<iContacts.length; j++) {
-					    			if (sView.contentEquals(cRepoInfo.getString("PRODUCT", iContacts[j]))) {
-					    				cRepoInfo.setString("APP", "", iContacts[j]);
+					    			if (sView.contentEquals(cRepoInfo.getString(sTagProject, iContacts[j]))) {
+					    				cRepoInfo.setString(sTagApp, "", iContacts[j]);
 					    			}
 					    		}
 							}
-							cRepoInfo.setString("APP", "", iContacts[i]);
+							cRepoInfo.setString(sTagApp, "", iContacts[i]);
 						}
 					}
 				}
@@ -312,8 +364,8 @@ public class EndevorRepLdap {
 			JCaContainer cUsers = new JCaContainer();
 			frame.readInputListGeneric(cUsers, "EndevorUsers.csv", ',');
 			
-			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount("APP"); iIndex++) {
-				if (!cRepoInfo.getString("APP", iIndex).isEmpty()) {
+			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount(sTagApp); iIndex++) {
+				if (!cRepoInfo.getString(sTagApp, iIndex).isEmpty()) {
 					boolean bLocalGeneric=false;
 					String sID  = cRepoInfo.getString("USERID", iIndex);
 					if (sID.contains("?")) 
@@ -340,17 +392,17 @@ public class EndevorRepLdap {
 
 			    		if (!bLocalGeneric) {
 							for (int i=0; i<iUsers.length; i++) {
-								String sApp = cRepoInfo.getString("APP", iUsers[i]);
+								String sApp = cRepoInfo.getString(sTagApp, iUsers[i]);
 								if (!sApp.isEmpty()) {
 						    		if (sProblems.isEmpty()) 
 						    			sProblems = "<ul> ";			    		
 						    		sProblems+= "<li>The Endevor user id, <b>"+sID+"</b>, references a terminated or unmapped user.</li>\n";									
 						    		
 						    		for (int j=i+1; j<iUsers.length; j++) {
-						    			cRepoInfo.setString("APP", "", iUsers[j]);
+						    			cRepoInfo.setString(sTagApp, "", iUsers[j]);
 						    		}
 								}
-								cRepoInfo.setString("APP", "", iUsers[i]);
+								cRepoInfo.setString(sTagApp, "", iUsers[i]);
 							}
 			    		}
 					} 
