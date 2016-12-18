@@ -243,7 +243,7 @@ public class EndevorRepLdap {
 		JCaContainer cLDAP = new JCaContainer();
 		frame = new CommonLdap("endeavorrepldap",
         		                sLogPath,
-        		                "", //sBCC,
+        		                sBCC,
         		                cLDAP);
 			
 		try {	
