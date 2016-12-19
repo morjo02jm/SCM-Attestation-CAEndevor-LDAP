@@ -299,7 +299,8 @@ public class EndevorRepLdap {
 				if (sProjects.length > 0) {
 					String sApprover = "";
 					for (int jIndex=0; jIndex<sApprovers.length; jIndex++) {
-						if (!sApprover.isEmpty()) sApprover += ";";
+						if (!sApprover.isEmpty()) 
+							sApprover += ";";
 						sApprover += sApprovers[jIndex];
 					}
 					
@@ -335,7 +336,8 @@ public class EndevorRepLdap {
 				String sProject = cRepoInfo.getString(sTagProject, k);
 				if (cRepoInfo.getString(sTagContact, k).equalsIgnoreCase("toolsadmin") &&
 					!cRepoInfo.getString(sTagApp, k).isEmpty() ) {
-		    		if (sProblems.isEmpty()) sProblems = tagUL;
+		    		if (sProblems.isEmpty()) 
+		    			sProblems = tagUL;
 		    		sProblems+= "<li>The product, <b>"+sProject+"</b> is End of Life.</li>\n";
 		    		
 					int[] iProjects = cRepoInfo.find(sTagProject, sProject);
@@ -352,13 +354,11 @@ public class EndevorRepLdap {
 					String sApprovers = cRepoInfo.getString(sTagContact, iIndex);
 					String[] sID = frame.readAssignedApprovers(sApprovers);
 					
-					boolean bHaveContact = false;
 					String sNewApprovers = "";
 					
 					for (int m=0; m<sID.length; m++) {
 						int[] iLDAP = cLDAP.find(sTagPmfkey, sID[m]);
 						if (iLDAP.length > 0) {
-							bHaveContact = true;
 							if (!sNewApprovers.isEmpty())
 								sNewApprovers += ";";
 							sNewApprovers += sID[m];
@@ -373,7 +373,7 @@ public class EndevorRepLdap {
 								String sView = cRepoInfo.getString(sTagProject, iContacts[i]);
 								
 					    		if (sProblems.isEmpty()) 
-					    			sProblems = "<ul> ";			    		
+					    			sProblems = tagUL;			    		
 					    		sProblems+= "<li>The Endevor contact set, <b>{"+sApprovers+"}</b>, for view, <b>"+sView+"</b>, does not contain a valid user.</li>\n";
 					    		
 					    		for (int j=i+1; j<iContacts.length; j++) {
@@ -431,12 +431,12 @@ public class EndevorRepLdap {
 								if (!sApp.isEmpty()) {									
 									if (bUnmapped) {
 							    		if (sProblems.isEmpty()) 
-							    			sProblems = "<ul> ";			    		
+							    			sProblems = tagUL;			    		
 							    		sProblems+= "<li>The Endevor user id, <b>"+sID+"</b>, references an unmapped user.</li>\n";									
 									}
 									else {										
 							    		//if (sProblems.isEmpty()) 
-							    		//	sProblems = "<ul> ";			    		
+							    		//	sProblems = tagUL;			    		
 							    		//sProblems+= "<li>The Endevor user id, <b>"+sID+"</b>, references a terminated user.</li>\n";									
 									}
 						    		for (int j=i+1; j<iUsers.length; j++) {
