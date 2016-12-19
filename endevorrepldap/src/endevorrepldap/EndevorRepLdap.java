@@ -62,7 +62,8 @@ public class EndevorRepLdap {
 				cRepoInfo.setString("ADMINISTRATOR", rSet.getString("ADMINISTRATOR").toLowerCase().trim(), iIndex);
 				cRepoInfo.setString("DEPARTMENT",    rSet.getString("RESOURCE_OWNER").toLowerCase().trim(),iIndex);
 				cRepoInfo.setString("USERID",        rSet.getString("USERID").toLowerCase().trim(),        iIndex);
-				cRepoInfo.setString("USERNAME",      rSet.getString("FULLNAME").trim().replace(',', '|'),  iIndex);
+				//cRepoInfo.setString("USERNAME",      rSet.getString("FULLNAME").trim().replace(',', '|'),  iIndex);
+				cRepoInfo.setString("USERNAME",      rSet.getString("FULLNAME").trim(),                    iIndex);
 				cRepoInfo.setString("ACC_READ",      rSet.getString("acc_read").trim(),                    iIndex);
 				cRepoInfo.setString("ACC_WRITE",     rSet.getString("acc_write").trim(),                   iIndex);
 				cRepoInfo.setString("ACC_UPDATE",    rSet.getString("acc_update").trim(),                  iIndex);
@@ -462,7 +463,7 @@ public class EndevorRepLdap {
 			
 			// Write out processed repository in organization file
 			if (!sOutputFile.isEmpty()) {
-				frame.writeCSVFileFromListGeneric(cRepoInfo, sOutputFile, ',');					
+				frame.writeCSVFileFromListGeneric(cRepoInfo, sOutputFile, '\t');					
 			}
 			
 			// Write out processed records to database
