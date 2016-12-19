@@ -83,5 +83,7 @@
 	<classpathentry kind="lib" path="db2jcc_license_cu.jar"/>
 	<classpathentry kind="lib" path="db2jcc.jar"/>
 	<classpathentry kind="lib" path="sqljdbc4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/faudo01/eclipse3.5.1/workspace/ccollabldap/ccollabldap/sqljdbc.jar"/>
+	<classpathentry kind="lib" path="C:/CACSCR/RTC Utils/json.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
