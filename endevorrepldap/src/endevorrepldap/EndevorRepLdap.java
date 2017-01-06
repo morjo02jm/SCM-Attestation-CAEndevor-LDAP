@@ -453,7 +453,7 @@ public class EndevorRepLdap {
 			    		for (int i=0; i<iUsers.length; i++) {
 			    			cRepoInfo.setString("USERID", 
 			    					            (bLocalGeneric? sUseID+"?" : sUseID),
-			    					            i);
+			    					            iUsers[i]);
 			    		}
 					}
 				}
