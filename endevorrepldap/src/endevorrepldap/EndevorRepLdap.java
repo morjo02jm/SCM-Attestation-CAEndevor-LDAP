@@ -212,6 +212,7 @@ public class EndevorRepLdap {
 		String sDB2Password = "";
 		String sImagDBPassword = "";	
 		String sProblems = "";
+		boolean bShowTerminated = false;
 		
 		// check parameters
 		for (int i = 0; i < iParms; i++)
@@ -227,6 +228,10 @@ public class EndevorRepLdap {
 			else if (args[i].compareToIgnoreCase("-log") == 0 )
 			{
 				sLogPath = args[++i];
+			}	
+			else if (args[i].compareToIgnoreCase("-showterminated") == 0 )
+			{
+				bShowTerminated = true;
 			}	
 			else {
 				System.out.println("Argument: "+args[i]);
@@ -435,13 +440,15 @@ public class EndevorRepLdap {
 							    			sProblems = tagUL;			    		
 							    		sProblems+= "<li>The Endevor user id, <b>"+sID+"</b>, references an unmapped user.</li>\n";									
 									}
-									else {										
-							    		//if (sProblems.isEmpty()) 
-							    		//	sProblems = tagUL;			    		
-							    		//sProblems+= "<li>The Endevor user id, <b>"+sID+"</b>, references a terminated user.</li>\n";									
+									else {				
+										if (bShowTerminated) {											
+								    		if (sProblems.isEmpty()) 
+								    			sProblems = tagUL;			    		
+								    		sProblems+= "<li>The Endevor user id, <b>"+sID+"</b>, references a terminated user.</li>\n";									
+										}
 									}
 						    		for (int j=i+1; j<iUsers.length; j++) {
-						    			cRepoInfo.setString(sTagApp, "", iUsers[j]);
+						    				cRepoInfo.setString(sTagApp, "", iUsers[j]);
 						    		}
 								}
 								cRepoInfo.setString(sTagApp, "", iUsers[i]);
@@ -475,7 +482,7 @@ public class EndevorRepLdap {
 				String sSubject, sScope;
 				
 				sSubject = "Notification of Problematic CA Endevor Contacts";
-				sScope = "SourceMinder DB2 Database";
+				sScope = "CIA DB2 Database";
 				
 		        String bodyText = frame.readTextResource("Notification_of_Noncompliant_Endevor_Contacts.txt", sScope, sProblems, "", "");								        								          
 		        frame.sendEmailNotification(email, sSubject, bodyText, true);
