@@ -25,8 +25,7 @@ public class EndevorRepLdap {
 	EndevorRepLdap() {
 		// Leaving empty		
 	}
-	
-		
+			
 	private static void readDBToRepoContainer(JCaContainer cRepoInfo, 
 			                                  String sDB2Password) {
 		PreparedStatement pstmt = null; 
