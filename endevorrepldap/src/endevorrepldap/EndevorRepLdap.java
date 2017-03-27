@@ -402,6 +402,8 @@ public class EndevorRepLdap {
 			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount(sTagApp); iIndex++) {
 				if (!cRepoInfo.getString(sTagApp, iIndex).isEmpty()) {
 					boolean bLocalGeneric=false;
+					boolean bTerminated=false;
+
 					String sID  = cRepoInfo.getString("USERID", iIndex);
 					if (sID.contains("?")) 
 						sID = sID.substring(0, sID.indexOf('?'));
@@ -415,6 +417,9 @@ public class EndevorRepLdap {
 						sRealID = cUsers.getString("CADOMAIN", iRepl[0]);
 						if (sRealID.equals("Generic")) {
 							bLocalGeneric = true;
+						}
+						else if (sRealID.equals("Terminated")) {
+							bTerminated = true;
 						}
 						else {
 							sUseID = sRealID;
