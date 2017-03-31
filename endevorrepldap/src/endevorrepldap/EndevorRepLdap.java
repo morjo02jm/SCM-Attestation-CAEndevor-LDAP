@@ -474,7 +474,7 @@ public class EndevorRepLdap {
 			
 			// Write out processed repository in organization file
 			if (!sOutputFile.isEmpty()) {
-				frame.writeCSVFileFromListGeneric(cRepoInfo, sOutputFile, '\t');					
+				frame.writeCSVFileFromListGeneric(cRepoInfo, sOutputFile, '\t', cLDAP);					
 			}
 			
 			// Write out processed records to database
