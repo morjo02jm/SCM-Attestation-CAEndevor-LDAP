@@ -137,12 +137,17 @@ public class EndevorRepLdap {
 					sContactEmail = "";
 					String[] aContacts = frame.readAssignedApprovers(cRepoInfo.getString(sTagContact, iIndex));
 					for (int j=0; j<aContacts.length; j++) {
+						String sContactNext = "";
+						if (aContacts[j].equalsIgnoreCase("toolsadmin"))
+							sContactNext= "Toolsadmin@ca.com";
+						else
+							sContactNext= aContacts[j]+"@ca.com";
+						
+						if ((sContactEmail.length()+sContactNext.length()+1) > 80) continue;
+						
 						if (!sContactEmail.isEmpty())
 							sContactEmail += ";";
-						if (aContacts[j].equalsIgnoreCase("toolsadmin"))
-							sContactEmail += "Toolsadmin@ca.com";
-						else
-							sContactEmail += aContacts[j]+"@ca.com";
+						sContactEmail += sContactNext;
 					}
 					sEntitlementAttrs = "resowner="+ cRepoInfo.getString("DEPARTMENT", iIndex)+";"+
 							            "adminby=" + cRepoInfo.getString("ADMINISTRATOR", iIndex);
