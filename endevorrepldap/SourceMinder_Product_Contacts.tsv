@@ -426,7 +426,7 @@ Secondary Index	r14;r15;r16;r18;19.0	Active	SCLM;Endevor	IMS	Source resides on D
 Secondary Index Builder for IMS	r14;r15;r16;r18;19.0	Active	SCLM;Endevor	IMS	Source resides on DEV DASD packs.    	"[{""PMFKEY"":""strji02""}]"		eduja01	strji02
 Service Catalog		Active	CSCR/Harvest	null	CSCR621	"[{""PMFKEY"":""vakmo01""}]"			vakmo01
 Service Desk Manager		Active	CSCR/Harvest	null	CSCR616/SDMAF;CSCR927/SDM	"[{""PMFKEY"":""vakmo01""},{""PMFKEY"":""vensu02""}]"		vensu02	vakmo01
-Service Desk Manager	R12;12.1;12.5;12.6;12.7;12.9;14.1;14.1.01;14.1.02;14.1.03	Active	CSCR/Harvest	null	CSCR927/SDr	"[{""PMFKEY"":""vakmo01""},{""PMFKEY"":""vensu02""}]"		vensu02	vakmo01
+Service Desk Manager	R12;12.1;12.5;12.6;12.7;12.9;14.1;14.1.01;14.1.02;14.1.03;17	Active	CSCR/Harvest	null	CSCR927/SDr	"[{""PMFKEY"":""vakmo01""},{""PMFKEY"":""vensu02""}]"		vensu02	vakmo01
 Service Desk Manager - Catalyst Connector		Active	CSCR/Harvest	null	CSCR709/cmdb	"[{""PMFKEY"":""vakmo01""},{""PMFKEY"":""vensu02""}]"		vensu02	vakmo01
 Smartphone Challenge		Active	CSCR/Harvest	null	CSCR1400	"[{""PMFKEY"":""kabni01""}]"			kabni01
 SMF Director	12.0;12.6;12.7	Active	CSCRE	null	PMAREST.MOTM.SMFD120.*	"[{""PMFKEY"":""jambr01""},{""PMFKEY"":""esqfr01""}]"		jambr01	esqfr01
