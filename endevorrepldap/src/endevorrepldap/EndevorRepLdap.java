@@ -296,7 +296,7 @@ public class EndevorRepLdap {
 			
 			// b. Apply any mapping table for contacts.
 			JCaContainer cContact = new JCaContainer();
-			frame.readSourceMinderContacts(cContact, "Endevor");
+			frame.readSourceMinderContacts(cContact, "Endevor", cLDAP);
 			// Apply contact information for records
 			// a. from SourceMinder Contacts
 			for (int iIndex=0; iIndex<cContact.getKeyElementCount("Approver"); iIndex++) {
@@ -313,9 +313,14 @@ public class EndevorRepLdap {
 							sApprover += ";";
 						sApprover += sApprovers[jIndex];
 					}
+
 					
 					for (int k=0; k<sProjects.length; k++) {
-						String sProject = sProjects[k].toUpperCase().replace("*", "");
+						String sProject = sProjects[k].toUpperCase();
+						sProject.replace("**", "!!");
+						sProject.replace("*", "");
+						sProject.replace("!!", "**");
+
 						int[] iProjects = cRepoInfo.find(sTagProject, sProject);
 						
 						for (int kIndex=0; kIndex<iProjects.length; kIndex++) {
@@ -325,7 +330,8 @@ public class EndevorRepLdap {
 					} // loop over project prefixes
 				} 	// broker record exists in contact info					
 			} // loop over contact records
-			
+
+			/*
 			cContact.clear();
 			frame.readInputListGeneric(cContact, "EndevorContacts.csv", ',');
 			
@@ -340,6 +346,7 @@ public class EndevorRepLdap {
 						cRepoInfo.setString(sTagContact, sContact, iDept[j]);
 				}
 			}
+			*/
 						
 			// Process all end of life projects (make them inactive projects in Harvest)
 			for (int k=0; k<cRepoInfo.getKeyElementCount(sTagProject); k++) {
@@ -384,7 +391,7 @@ public class EndevorRepLdap {
 								
 					    		if (sProblems.isEmpty()) 
 					    			sProblems = tagUL;			    		
-					    		sProblems+= "<li>The Endevor contact set, <b>{"+sApprovers+"}</b>, for view, <b>"+sView+"</b>, does not contain a valid user.</li>\n";
+					    		sProblems+= "<li>The Endevor product, <b>"+sView+"</b>, does not have a valid contact.</li>\n";
 					    		
 					    		for (int j=i+1; j<iContacts.length; j++) {
 					    			if (sView.contentEquals(cRepoInfo.getString(sTagProject, iContacts[j]))) {
