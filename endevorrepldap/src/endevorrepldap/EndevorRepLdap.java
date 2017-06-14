@@ -325,7 +325,9 @@ public class EndevorRepLdap {
 						
 						for (int kIndex=0; kIndex<iProjects.length; kIndex++) {
 							if (cRepoInfo.getString(sTagContact, iProjects[kIndex]).isEmpty())
-								cRepoInfo.setString(sTagContact, bActive? sApprover : "toolsadmin", iProjects[kIndex]);
+								//cRepoInfo.setString(sTagContact, bActive? sApprover : "toolsadmin", iProjects[kIndex]);
+								// Endevor has no concept of inactive project/view, so SCO says we need to disregard project state.
+								cRepoInfo.setString(sTagContact, sApprover, iProjects[kIndex]);
 						}
 					} // loop over project prefixes
 				} 	// broker record exists in contact info					
