@@ -410,7 +410,7 @@ public class EndevorRepLdap {
 		
 			// d. Look for terminated users
 			JCaContainer cUsers = new JCaContainer();
-			frame.readInputListGeneric(cUsers, "EndevorUsers.csv", ',');
+			frame.readInputListGeneric(cUsers, "tss_user_mapping.csv", ',');
 			
 			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount(sTagApp); iIndex++) {
 				if (!cRepoInfo.getString(sTagApp, iIndex).isEmpty()) {
