@@ -6,10 +6,13 @@ import java.io.*;
 
 import commonldap.CommonLdap;
 import commonldap.JCaContainer;
+import commonldap.SDTicket;
 
 public class EndevorRepLdap {
 	private static int iReturnCode = 0;
 	private static CommonLdap frame;
+	private static String sProblems = "";
+	private static List<String> ticketProblems = new ArrayList<String>();
 
 // Repository container headings	
 	private static String sTagProject = "PRODUCT";
@@ -215,7 +218,6 @@ public class EndevorRepLdap {
 		String sLogPath = "endevorrepldap.log";
 		String sDB2Password = "";
 		String sImagDBPassword = "";	
-		String sProblems = "";
 		boolean bShowTerminated = false;
 		
 		// check parameters
@@ -244,6 +246,7 @@ public class EndevorRepLdap {
 				                   "                     [-bcc emailadress] [-log textfile] [-h |-?]");
 				System.out.println(" -inputfile option specifies the attestation input file to validate (tsv)");
 				System.out.println(" -outputfile option specifies the attestation output file (csv)");
+				System.out.println(" -showterminated option creates notifications for terminated users");
 				System.out.println(" -bcc option specifies an email address to bcc on notifications sent to users");
 				System.out.println(" -log option specifies location log file.");
 				System.exit(iReturnCode);
@@ -333,23 +336,6 @@ public class EndevorRepLdap {
 				} 	// broker record exists in contact info					
 			} // loop over contact records
 
-			/*
-			cContact.clear();
-			frame.readInputListGeneric(cContact, "EndevorContacts.csv", ',');
-			
-			for (int iIndex=0; iIndex<cContact.getKeyElementCount("ENTITYNAME"); iIndex++) {
-				String sBy      = cContact.getString("BY", iIndex);
-				String sName    = cContact.getString("ENTITYNAME", iIndex);
-				String sContact = cContact.getString(sTagContact, iIndex);
-				
-				int[] iDept = sBy.equals("DEPT")? cRepoInfo.find("DEPARTMENT", sName) : cRepoInfo.find(sTagProject, sName);				
-				for (int j=0; j<iDept.length; j++) {
-					if (cRepoInfo.getString(sTagContact, iDept[j]).isEmpty())
-						cRepoInfo.setString(sTagContact, sContact, iDept[j]);
-				}
-			}
-			*/
-						
 			// Process all end of life projects (make them inactive projects in Harvest)
 			for (int k=0; k<cRepoInfo.getKeyElementCount(sTagProject); k++) {
 				String sProject = cRepoInfo.getString(sTagProject, k);
@@ -393,7 +379,7 @@ public class EndevorRepLdap {
 								
 					    		if (sProblems.isEmpty()) 
 					    			sProblems = tagUL;			    		
-					    		sProblems+= "<li>The Endevor product, <b>"+sView+"</b>, does not have a valid contact.</li>\n";
+					    		sProblems+= "<li>The Endeavor product, <b>"+sView+"</b>, does not have a valid contact.</li>\n";
 					    		
 					    		for (int j=i+1; j<iContacts.length; j++) {
 					    			if (sView.contentEquals(cRepoInfo.getString(sTagProject, iContacts[j]))) {
@@ -450,26 +436,43 @@ public class EndevorRepLdap {
 			    		int[] iUsers = cRepoInfo.find("USERID", sID); 	
 
 			    		if (!bLocalGeneric) {
+			    			String sProduct, sAuthtype, sResmask;
 							for (int i=0; i<iUsers.length; i++) {
 								String sApp = cRepoInfo.getString(sTagApp, iUsers[i]);
 								if (!sApp.isEmpty()) {									
 									if (bUnmapped) {
 							    		if (sProblems.isEmpty()) 
 							    			sProblems = tagUL;			    		
-							    		sProblems+= "<li>The Endevor user id, <b>"+sID+"</b>, references an unmapped user.</li>\n";									
+							    		sProblems+= "<li>The Endeavor user id, <b>"+sID+"</b>, references an unmapped user.</li>\n";									
 									}
 									else {				
 										if (bShowTerminated) {											
 								    		if (sProblems.isEmpty()) 
 								    			sProblems = tagUL;			    		
-								    		sProblems+= "<li>The Endevor user id, <b>"+sID+"</b>, references a terminated user.</li>\n";									
+								    		sProblems+= "<li>The Endeavor user id, <b>"+sID+"</b>, references a terminated user.</li>\n";									
 										}
 									}
 						    		for (int j=i+1; j<iUsers.length; j++) {
-						    				cRepoInfo.setString(sTagApp, "", iUsers[j]);
+						    			cRepoInfo.setString(sTagApp, "", iUsers[j]);
+						    			if (bShowTerminated) {
+						    				sProduct  = cRepoInfo.getString("PRODUCT", iUsers[j]);
+						    				sAuthtype = cRepoInfo.getString("AUTHTYPE", iUsers[j]);
+						    				if (sAuthtype.equalsIgnoreCase("R"))
+						    					sAuthtype += ":"+cRepoInfo.getString("ROLEID", iUsers[j]);
+						    				sResmask  = cRepoInfo.getString("RESMASK", iUsers[j]);
+						    				ticketProblems.add("User access for terminated user with CA Endeavor user id, "+sID+", should be removed from product/authtype:roleid/resmask: "+sProduct+"/"+sAuthtype+"/"+sResmask+".");												
+						    			}
 						    		}
 								}
 								cRepoInfo.setString(sTagApp, "", iUsers[i]);
+				    			if (bShowTerminated) {
+				    				sProduct  = cRepoInfo.getString("PRODUCT", iUsers[i]);
+				    				sAuthtype = cRepoInfo.getString("AUTHTYPE", iUsers[i]);
+				    				if (sAuthtype.equalsIgnoreCase("R"))
+				    					sAuthtype += ":"+cRepoInfo.getString("ROLEID", iUsers[i]);
+				    				sResmask  = cRepoInfo.getString("RESMASK", iUsers[i]);
+				    				ticketProblems.add("User access for terminated user with CA Endeavor user id, "+sID+", should be removed from product/authtype:roleid/resmask: "+sProduct+"/"+sAuthtype+"/"+sResmask+".");
+				    			}
 							}
 			    		}
 					} 
@@ -495,13 +498,31 @@ public class EndevorRepLdap {
 			writeDBFromRepoContainer(cRepoInfo, sImagDBPassword);
 			
 			if (!sProblems.isEmpty()) {
-				sProblems+="</ul>\n";
 				String email = "faudo01@ca.com";
-				String sSubject, sScope;
+				String sSubject, sScope, sTicket;
 				
-				sSubject = "Notification of Problematic CA Endevor Contacts";
+				sSubject = "Notification of CA Endevor Governance Problems and Changes";
 				sScope = "CIA DB2 Database";
+				sTicket = "Mainframe:System Endeavor SCM User Access";
 				
+		        //create a service desk ticket from ticketProblem
+		        String prblms = "";
+		        for(String prbm: ticketProblems){
+		            prblms += prbm + "\n";
+		        }
+		        
+		        if(!prblms.isEmpty()) {
+		        	String ticket = "";
+		            SDTicket sd = new SDTicket("test");
+		            ticket = sd.serviceTicket(sTicket, prblms, "GIS-STO-Mainframe-Management-L2", "", frame);
+		        	if (!ticket.isEmpty()) {	
+		        		if (!sProblems.isEmpty()) 
+		        			sProblems += tagUL;
+		        		sProblems += "<li>CSM ticket, <b>SRQ#"+ticket+"</b> created.</li>";
+		        	}	
+		        }
+				
+				sProblems+="</ul>\n";				
 		        String bodyText = frame.readTextResource("Notification_of_Noncompliant_Endevor_Contacts.txt", sScope, sProblems, "", "");								        								          
 		        frame.sendEmailNotification(email, sSubject, bodyText, true);
 			} // had some notifications
