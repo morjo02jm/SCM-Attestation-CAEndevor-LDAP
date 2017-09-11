@@ -516,7 +516,7 @@ public class EndevorRepLdap {
 		            SDTicket sd = new SDTicket("test");
 		            ticket = sd.serviceTicket(sTicket, prblms, "GIS-STO-Mainframe-Management-L2", "", frame);
 		        	if (!ticket.isEmpty()) {	
-		        		if (!sProblems.isEmpty()) 
+		        		if (sProblems.isEmpty()) 
 		        			sProblems += tagUL;
 		        		sProblems += "<li>CSM ticket, <b>SRQ#"+ticket+"</b> created.</li>";
 		        	}	
