@@ -513,7 +513,7 @@ public class EndevorRepLdap {
 		            nCount++;
 		            if (nCount%10==0) {
 			        	String ticket = "";
-			            SDTicket sd = new SDTicket("test");
+			            SDTicket sd = new SDTicket("production");
 			            ticket = sd.serviceTicket(sTicket, prblms, "GIS-STO-Mainframe-Management-L2", "", frame);
 			        	if (!ticket.isEmpty()) {	
 			        		if (sProblems.isEmpty()) 
