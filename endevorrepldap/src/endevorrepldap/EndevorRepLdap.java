@@ -502,40 +502,11 @@ public class EndevorRepLdap {
 				String sSubject, sScope, sTicket;
 				
 				sSubject = "Notification of CA Endevor Governance Problems and Changes";
-				sScope = "CIA DB2 Database";
-				sTicket = "Mainframe:System Endeavor SCM User Access";
+				sScope   = "CIA DB2 Database";
+				sTicket  = "Mainframe:System Endeavor SCM User Access";
 				
 		        //create a service desk ticket from ticketProblem
-				
-		        String prblms = "";
-		        int nCount = 0;
-		        for(String prbm: ticketProblems){
-		            prblms += prbm + "\n\n";
-		            nCount++;
-		            if (nCount%10==0) {
-			        	String ticket = "";
-			            SDTicket sd = new SDTicket("test");
-			            ticket = sd.serviceTicket(sTicket, prblms, "GIS-STO-Mainframe-Management-L2", "", frame);
-			        	if (!ticket.isEmpty()) {	
-			        		if (sProblems.isEmpty()) 
-			        			sProblems += tagUL;
-			        		sProblems += "<li>CSM ticket, <b>SRQ#"+ticket+"</b> created.</li>";
-			        	}			            	
-			            prblms="";
-		            }
-		        }
-		        
-		        if(!prblms.isEmpty()) {
-		        	String ticket = "";
-		            SDTicket sd = new SDTicket("test");
-		            ticket = sd.serviceTicket(sTicket, prblms, "GIS-STO-Mainframe-Management-L2", "", frame);
-		        	if (!ticket.isEmpty()) {	
-		        		if (sProblems.isEmpty()) 
-		        			sProblems += tagUL;
-		        		sProblems += "<li>CSM ticket, <b>SRQ#"+ticket+"</b> created.</li>";
-		        	}	
-		        }
-				
+				frame.createServiceTicket(sProblems, sTicket, ticketProblems, "GIS-STO-Mainframe-Management-L2", "");
 				sProblems+="</ul>\n";				
 		        String bodyText = frame.readTextResource("Notification_of_Noncompliant_Endevor_Contacts.txt", sScope, sProblems, "", "");								        								          
 		        frame.sendEmailNotification(email, sSubject, bodyText, true);
