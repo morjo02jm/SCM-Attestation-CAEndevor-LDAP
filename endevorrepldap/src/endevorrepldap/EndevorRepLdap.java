@@ -409,7 +409,7 @@ public class EndevorRepLdap {
 					String sRealID = sID;
 					String sUseID  = sID;
 
-					int[] iRepl = cUsers.find("TOPSECRET", sID);
+					int[] iRepl = cUsers.find("TOPSECRET", sID.toLowerCase());
 					
 					boolean bUnmapped = false;
 					if (iRepl.length > 0) {
@@ -425,7 +425,7 @@ public class EndevorRepLdap {
 						}
 					}
 					else {
-						iRepl = cUsers.find("CADOMAIN",sID);
+						iRepl = cUsers.find("CADOMAIN",sID.toLowerCase());
 						if (iRepl.length == 0)
 							bUnmapped = true;
 					}
