@@ -1,4 +1,4 @@
-package endevorrepldap.endevorrepldap;
+package commonldap.endevorrepldap;
 
 import java.sql.*;
 import java.util.*;

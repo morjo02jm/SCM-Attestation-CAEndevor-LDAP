@@ -1,4 +1,4 @@
-package endevorrepldap.endevorrepldap;
+package commonldap.endevorrepldap;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
