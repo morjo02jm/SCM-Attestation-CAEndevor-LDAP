@@ -1,12 +1,12 @@
-package endevorrepldap;
+package commonldap.endevorrepldap;
 
 import java.sql.*;
 import java.util.*;
 import java.io.*;
 
-import commonldap.CommonLdap;
-import commonldap.JCaContainer;
-import commonldap.SDTicket;
+import commonldap.commonldap.CommonLdap;
+import commonldap.commonldap.JCaContainer;
+import commonldap.commonldap.SDTicket;
 
 public class EndevorRepLdap {
 	private static int iReturnCode = 0;
