@@ -79,6 +79,7 @@
 			<url>http://isl-dsdc.ca.com/artifactory/p2-local/</url>
 		</repository>
 	</repositories>
+	
 	<build>
 		<plugins>
 			<plugin>
