@@ -216,6 +216,7 @@ public class EndevorRepLdap {
 		String sOutputFile = "";
 		String sBCC = "";
 		String sLogPath = "endevorrepldap.log";
+		String sMapFile = "tss_user_mapping.csv";
 		String sDB2Password = "";
 		String sImagDBPassword = "";	
 		boolean bShowTerminated = false;
@@ -226,6 +227,10 @@ public class EndevorRepLdap {
 			if (args[i].compareToIgnoreCase("-outputfile") == 0 )
 			{
 				sOutputFile = args[++i];
+			}			
+			else if (args[i].compareToIgnoreCase("-mapfile") == 0 )
+			{
+				sMapFile = args[++i];
 			}			
 			else if (args[i].compareToIgnoreCase("-bcc") == 0 )
 			{
@@ -396,7 +401,7 @@ public class EndevorRepLdap {
 		
 			// d. Look for terminated users
 			JCaContainer cUsers = new JCaContainer();
-			frame.readInputListGeneric(cUsers, "tss_user_mapping.csv", ',');
+			frame.readInputListGeneric(cUsers, sMapFile, ',');
 			
 			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount(sTagApp); iIndex++) {
 				if (!cRepoInfo.getString(sTagApp, iIndex).isEmpty()) {
@@ -417,9 +422,6 @@ public class EndevorRepLdap {
 						if (sRealID.equals("Generic")) {
 							bLocalGeneric = true;
 						}
-						else if (sRealID.equals("Terminated")) {
-							bTerminated = true;
-						}
 						else {
 							sUseID = sRealID;
 						}
@@ -430,9 +432,8 @@ public class EndevorRepLdap {
 							bUnmapped = true;
 					}
 					
-					int[] iLDAP = cLDAP.find(sTagPmfkey, sUseID);
-					
-					if (iLDAP.length == 0 && !bLocalGeneric) {
+					int[] iLDAP = cLDAP.find(sTagPmfkey, sUseID);				
+					if (iLDAP.length == 0 && !bLocalGeneric) {						
 			    		int[] iUsers = cRepoInfo.find("USERID", sID); 	
 
 			    		if (!bLocalGeneric) {
@@ -484,10 +485,19 @@ public class EndevorRepLdap {
 			    					            iUsers[i]);
 			    		}
 					}
+					
+					if (bUnmapped && !bLocalGeneric && iLDAP.length > 0) {
+						int cIndex = cUsers.getKeyElementCount("CADOMAIN");
+						cUsers.setString("TOPSECRET", sID, cIndex);
+						cUsers.setString("CADOMAIN", sUseID.toLowerCase(), cIndex);
+					}
 				}
 			}
 			
-			
+			// Write out tss mapping file with changes
+			if (!cUsers.isEmpty()) {
+				frame.writeCSVFileFromListGeneric(cUsers, sMapFile, ',', null, false);
+			}
 			
 			// Write out processed repository in organization file
 			if (!sOutputFile.isEmpty()) {
