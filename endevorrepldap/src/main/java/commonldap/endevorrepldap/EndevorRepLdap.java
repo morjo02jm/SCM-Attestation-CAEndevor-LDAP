@@ -511,6 +511,10 @@ public class EndevorRepLdap {
 				String email = "faudo01@ca.com";
 				String sSubject, sScope, sTicket;
 				
+				if (sProblems.contains("terminated user")) {
+					email = email+";bigag01@ca.com"; //Team-GIS-Mainframe-PlatformManagement-Security?
+				}
+				
 				sSubject = "Notification of CA Endevor Governance Problems and Changes";
 				sScope   = "CIA DB2 Database";
 				sTicket  = "Mainframe:System Endeavor SCM User Access";
