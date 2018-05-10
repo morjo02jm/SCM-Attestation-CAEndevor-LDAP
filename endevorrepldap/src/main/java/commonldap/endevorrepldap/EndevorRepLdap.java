@@ -275,6 +275,13 @@ public class EndevorRepLdap {
 			// Write out processed records to database
 			JCaContainer cRepoInfo = new JCaContainer();
 			readDBToRepoContainer(cRepoInfo, sDB2Password);
+
+/*			
+			// Write out processed repository in organization file
+			if (!sOutputFile.isEmpty()) {
+				frame.writeCSVFileFromListGeneric(cRepoInfo, sOutputFile, '\t');					
+			}			
+*/
 			
 			// a. Loop over records collapsing APP_INSTANCEs
 			String sEntitlementLast = "";
@@ -354,6 +361,7 @@ public class EndevorRepLdap {
 					for (int iIndex=0; iIndex<iProjects.length; iIndex++) {
 						cRepoInfo.setString(sTagApp, "", iProjects[iIndex]);
 					}
+					
 				} // end of life entry					
 			} //loop over broker entries
 			
@@ -409,6 +417,11 @@ public class EndevorRepLdap {
 					boolean bTerminated=false;
 
 					String sID  = cRepoInfo.getString("USERID", iIndex);
+					if (sID.equalsIgnoreCase("yuned01") || sID.equalsIgnoreCase("wymda01")) {
+						int a = 1;
+						a = a+1;;
+					}
+					
 					if (sID.contains("?")) 
 						sID = sID.substring(0, sID.indexOf('?'));
 					String sRealID = sID;
