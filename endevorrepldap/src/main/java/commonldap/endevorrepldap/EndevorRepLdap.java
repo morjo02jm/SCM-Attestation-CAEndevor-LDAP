@@ -276,13 +276,6 @@ public class EndevorRepLdap {
 			JCaContainer cRepoInfo = new JCaContainer();
 			readDBToRepoContainer(cRepoInfo, sDB2Password);
 
-/*			
-			// Write out processed repository in organization file
-			if (!sOutputFile.isEmpty()) {
-				frame.writeCSVFileFromListGeneric(cRepoInfo, sOutputFile, '\t');					
-			}			
-*/
-			
 			// a. Loop over records collapsing APP_INSTANCEs
 			String sEntitlementLast = "";
 			String sInstanceLast = "";
@@ -417,10 +410,6 @@ public class EndevorRepLdap {
 					boolean bTerminated=false;
 
 					String sID  = cRepoInfo.getString("USERID", iIndex);
-					if (sID.equalsIgnoreCase("yuned01") || sID.equalsIgnoreCase("wymda01")) {
-						int a = 1;
-						a = a+1;;
-					}
 					
 					if (sID.contains("?")) 
 						sID = sID.substring(0, sID.indexOf('?'));
