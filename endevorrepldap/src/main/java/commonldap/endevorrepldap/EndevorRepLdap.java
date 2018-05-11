@@ -454,29 +454,23 @@ public class EndevorRepLdap {
 								    			sProblems = tagUL;			    		
 								    		sProblems+= "<li>The Endeavor user id, <b>"+sID+"</b>, references a terminated user.</li>\n";									
 										}
-									}
-						    		for (int j=i+1; j<iUsers.length; j++) {
-						    			cRepoInfo.setString(sTagApp, "", iUsers[j]);
-						    			if (bShowTerminated) {
-						    				sProduct  = cRepoInfo.getString("PRODUCT", iUsers[j]);
-						    				sAuthtype = cRepoInfo.getString("AUTHTYPE", iUsers[j]);
-						    				if (sAuthtype.equalsIgnoreCase("R"))
-						    					sAuthtype += ":"+cRepoInfo.getString("ROLEID", iUsers[j]);
-						    				sResmask  = cRepoInfo.getString("RESMASK", iUsers[j]);
-						    				ticketProblems.add("User access for terminated user with CA Endeavor user id, "+sID+", should be removed from product/authtype:roleid/resmask: "+sProduct+"/"+sAuthtype+"/"+sResmask+".");												
+									}									
+									
+						    		String sSysIdArr = "{";
+						    		for (int j=i; j<iUsers.length; j++) {
+						    			String sSysId = cRepoInfo.getString("APP_INSTANCE", iUsers[j]);
+						    			if (!sSysIdArr.contains(sSysId)) {
+						    				sSysIdArr += (i==j?"":";") + sSysId;
 						    			}
+						    			cRepoInfo.setString(sTagApp, "", iUsers[j]);
 						    		}
-								}
-								cRepoInfo.setString(sTagApp, "", iUsers[i]);
-				    			if (bShowTerminated) {
-				    				sProduct  = cRepoInfo.getString("PRODUCT", iUsers[i]);
-				    				sAuthtype = cRepoInfo.getString("AUTHTYPE", iUsers[i]);
-				    				if (sAuthtype.equalsIgnoreCase("R"))
-				    					sAuthtype += ":"+cRepoInfo.getString("ROLEID", iUsers[i]);
-				    				sResmask  = cRepoInfo.getString("RESMASK", iUsers[i]);
-				    				ticketProblems.add("User access for terminated user with CA Endeavor user id, "+sID+", should be removed from product/authtype:roleid/resmask: "+sProduct+"/"+sAuthtype+"/"+sResmask+".");
-				    			}
-							}
+						    		sSysIdArr += "}";
+						    		
+					    			if (bShowTerminated) {
+					    				ticketProblems.add("USERTSS.ASUSPEND should be set for TSS user id, "+sID+", with SYSIDs, "+sSysIdArr+".");
+					    			}
+								} // unprocessed user records with no corporate id
+							} // loop over records where user has no corporate id
 			    		}
 					} 
 					else if (bLocalGeneric || !sID.equalsIgnoreCase(sRealID)){
