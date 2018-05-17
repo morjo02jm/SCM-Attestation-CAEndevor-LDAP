@@ -275,7 +275,12 @@ public class EndevorRepLdap {
 			// Write out processed records to database
 			JCaContainer cRepoInfo = new JCaContainer();
 			readDBToRepoContainer(cRepoInfo, sDB2Password);
-
+/*
+			// Write out processed repository in organization file
+			if (!sOutputFile.isEmpty()) {
+				frame.writeCSVFileFromListGeneric(cRepoInfo, sOutputFile, '\t');					
+			}
+*/			
 			// a. Loop over records collapsing APP_INSTANCEs
 			String sEntitlementLast = "";
 			String sInstanceLast = "";
@@ -504,8 +509,10 @@ public class EndevorRepLdap {
 			writeDBFromRepoContainer(cRepoInfo, sImagDBPassword);
 			
 			if (!sProblems.isEmpty()) {
-				String email = "faudo01@ca.com";
-				String sSubject, sScope, sTicket;
+				String email = frame.expandDistributionListforEmail("cn=Team - GIS - githubcom - Tools Services - Contacts,ou=self service groups,ou=groups", cLDAP);
+				String sSubject, sTicket, sScope;
+				if (email.startsWith(";"))
+					email = email.substring(1);
 				
 				if (sProblems.contains("terminated user")) {
 					email = email+";bigag01@ca.com"; //Team-GIS-Mainframe-PlatformManagement-Security?
