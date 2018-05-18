@@ -217,6 +217,7 @@ public class EndevorRepLdap {
 		String sBCC = "";
 		String sLogPath = "endevorrepldap.log";
 		String sMapFile = "tss_user_mapping.csv";
+		String sContactFile = "";
 		String sDB2Password = "";
 		String sImagDBPassword = "";	
 		boolean bShowTerminated = false;
@@ -231,6 +232,10 @@ public class EndevorRepLdap {
 			else if (args[i].compareToIgnoreCase("-mapfile") == 0 )
 			{
 				sMapFile = args[++i];
+			}			
+			else if (args[i].compareToIgnoreCase("-contactfile") == 0 )
+			{
+				sContactFile = args[++i];
 			}			
 			else if (args[i].compareToIgnoreCase("-bcc") == 0 )
 			{
@@ -309,6 +314,8 @@ public class EndevorRepLdap {
 			
 			// b. Apply any mapping table for contacts.
 			JCaContainer cContact = new JCaContainer();
+			if (!sContactFile.isEmpty())
+				frame.sContactFile = sContactFile;
 			frame.readSourceMinderContacts(cContact, "Endevor", cLDAP);
 			// Apply contact information for records
 			// a. from SourceMinder Contacts
