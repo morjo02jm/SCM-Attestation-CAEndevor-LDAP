@@ -18,6 +18,7 @@ public class EndevorRepLdap {
 	private static String sTagProject = "PRODUCT";
 	private static String sTagContact = "CONTACT";
 	private static String sTagApp     = "APP";
+	private static String sTagProduct = "PRODUCTNAME";
 	
 	// LDAP columns
 	private static String sTagPmfkey  = "sAMAccountName";
@@ -77,6 +78,7 @@ public class EndevorRepLdap {
 				cRepoInfo.setString("ACC_CONTROL",   rSet.getString("acc_control").trim(),                 iIndex);
 				cRepoInfo.setString("ACC_INQUIRE",   rSet.getString("acc_inquire").trim(),                 iIndex);
 				cRepoInfo.setString("ACC_SET",       rSet.getString("acc_set").trim(),                     iIndex);			
+				cRepoInfo.setString("PRODUCTNAME",   "",                                                   iIndex);
 				iIndex++;
 			} // loop over record sets
 			
@@ -153,7 +155,8 @@ public class EndevorRepLdap {
 						sContactEmail += sContactNext;
 					}
 					sEntitlementAttrs = "resowner="+ cRepoInfo.getString("DEPARTMENT", iIndex)+";"+
-							            "adminby=" + cRepoInfo.getString("ADMINISTRATOR", iIndex);
+							            "adminby=" + cRepoInfo.getString("ADMINISTRATOR", iIndex)+";"+
+							            "product=" + cRepoInfo.getString("PRODUCTNAME", iIndex);
 					sUserAttrs = "username=" +  cRepoInfo.getString("USERNAME", iIndex) + ";" +
 							     "read="     + (cRepoInfo.getString("ACC_READ", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
 							     "write="    + (cRepoInfo.getString("ACC_WRITE", iIndex).equalsIgnoreCase("A")? "Y" : "N") + ";" +
@@ -321,6 +324,11 @@ public class EndevorRepLdap {
 			// a. from SourceMinder Contacts
 			for (int iIndex=0; iIndex<cContact.getKeyElementCount("Approver"); iIndex++) {
 				String sLocation = cContact.getString("Location", iIndex).replace("\"", "");
+				String sProduct = cContact.getString("Product", iIndex);
+				if (sLocation.equalsIgnoreCase("Z2L")) {
+					int a=1;
+					int b=a;
+				}
 				String[] sProjects = frame.readAssignedBrokerProjects(sLocation, "");
 				String[] sApprovers = frame.readAssignedApprovers(cContact.getString("Approver", iIndex));
 				boolean bActive = cContact.getString("Active", iIndex).contentEquals("Y");
@@ -348,6 +356,9 @@ public class EndevorRepLdap {
 								//cRepoInfo.setString(sTagContact, bActive? sApprover : "toolsadmin", iProjects[kIndex]);
 								// Endevor has no concept of inactive project/view, so SCO says we need to disregard project state.
 								cRepoInfo.setString(sTagContact, sApprover, iProjects[kIndex]);
+								String sThis = cRepoInfo.getString(sTagProduct, iProjects[kIndex]);
+								if (sThis.isEmpty())
+									cRepoInfo.setString(sTagProduct, sProduct, iProjects[kIndex]);
 						}
 					} // loop over project prefixes
 				} 	// broker record exists in contact info					
