@@ -1,0 +1,6 @@
+SELECT DISTINCT S1.usermask, S1.scopeid, D1.type 
+FROM CIADB01.SCPUSER AS S1  
+JOIN CIADB01.USERTSS AS D1 ON (S1.usermask = D1.userid) 
+WHERE S1.scopeid in (%1) 
+ AND D1.type not in ('U','L') 
+ORDER BY 2,3,1

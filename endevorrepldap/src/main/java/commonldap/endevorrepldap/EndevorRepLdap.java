@@ -210,6 +210,52 @@ public class EndevorRepLdap {
 	
 	
 	
+	private static void readEndevorDepartmentContacts(JCaContainer cDCA, ArrayList<String> aDept, String sDB2Password) {
+		PreparedStatement pstmt = null; 
+		String sqlStmt;
+		int iIndex = 0;
+		ResultSet rSet;
+		
+		String sqlError = "DB2. Unable to execute query.";
+		String sJDBC = "jdbc:db2://CA31:5122/DA0GPTIB:retrieveMessagesFromServerOnGetMessage=true;emulateParameterMetaDataForZCalls=1;;user=ATTAUT1;password="+sDB2Password+";";
+
+		String sIn = "";
+		for (int i=0; i<aDept.size(); i++) {
+			if (!sIn.isEmpty())
+				sIn += ", ";
+			sIn += "'"+aDept.get(i)+"'";
+		}
+		
+		try {
+			Class.forName("com.ibm.db2.jcc.DB2Driver");
+			Connection conn = DriverManager.getConnection(sJDBC);
+	
+			sqlError = "DB2. Error reading DCA/VCA records from CIA database.";
+			sqlStmt = frame.readTextResource("EndeavorDCAQuery.txt", sIn, "", "", "");
+			pstmt=conn.prepareStatement(sqlStmt); 
+			rSet = pstmt.executeQuery();
+			while (rSet.next()) {
+				String sResult= rSet.getString("USERMASK").trim() + "/" +
+								rSet.getString("SCOPEID").trim() + "/" +
+								rSet.getString("TYPE").trim();
+				cDCA.setString("USERID", rSet.getString("USERMASK").trim(), iIndex);
+				cDCA.setString("DEPARTMENT", rSet.getString("SCOPEID").trim(), iIndex);
+				cDCA.setString("TYPE", rSet.getString("TYPE").trim(), iIndex);
+				iIndex++;
+			} // loop over record sets
+		} catch (ClassNotFoundException e) {
+			iReturnCode = 101;
+		    frame.printErr(sqlError);
+		    frame.printErr(e.getLocalizedMessage());			
+		    System.exit(iReturnCode);
+		} catch (SQLException e) {     
+			iReturnCode = 102;
+		    frame.printErr(sqlError);
+		    frame.printErr(e.getLocalizedMessage());			
+		    System.exit(iReturnCode);
+		}			
+	} //readEndevorDepartmentContacts
+	
 	
 	
 	
@@ -325,10 +371,6 @@ public class EndevorRepLdap {
 			for (int iIndex=0; iIndex<cContact.getKeyElementCount("Approver"); iIndex++) {
 				String sLocation = cContact.getString("Location", iIndex).replace("\"", "");
 				String sProduct = cContact.getString("Product", iIndex);
-				if (sLocation.equalsIgnoreCase("Z2L")) {
-					int a=1;
-					int b=a;
-				}
 				String[] sProjects = frame.readAssignedBrokerProjects(sLocation, "");
 				String[] sApprovers = frame.readAssignedApprovers(cContact.getString("Approver", iIndex));
 				boolean bActive = cContact.getString("Active", iIndex).contentEquals("Y");
@@ -513,6 +555,75 @@ public class EndevorRepLdap {
 				}
 			}
 			
+			//e. Create notifications regarding approvers not in list of DCA/VCAs
+			// retrieve a list of departments
+			ArrayList<String> aDept = new ArrayList<String>();
+			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount(sTagApp); iIndex++) {
+				String sDept = cRepoInfo.getString("DEPARTMENT", iIndex).toUpperCase();
+				if (!aDept.contains((Object)sDept))
+					aDept.add(sDept.toUpperCase());
+			}
+			Collections.sort(aDept);
+			
+			JCaContainer cDCA = new JCaContainer();
+			readEndevorDepartmentContacts(cDCA, aDept, sDB2Password);
+			
+			for (int iIndex=0; iIndex<aDept.size(); iIndex++) {
+				String sDept = aDept.get(iIndex);
+				int[] iDept = cDCA.find("DEPARTMENT", sDept.toUpperCase());
+				if (iDept.length > 0) {
+					ArrayList<String> aContact = new ArrayList<String>();
+					for (int j=0; j<iDept.length; j++) {
+						String sContact = cDCA.getString("USERID", iDept[j]).toLowerCase();
+						// need to translate from TOPSECRET to CADOMAIN
+						int[] iContact = cUsers.find("TOPSECRET", sContact);
+						if (iContact.length > 0)
+							sContact = cUsers.getString("CADOMAIN", iContact[0]);
+						
+						if (!sContact.equalsIgnoreCase("generic") &&
+							!aContact.contains(sContact))
+							aContact.add(sContact.toLowerCase());
+					}
+						
+					// look at the repo info for matching departments; check if approver is in DCA/VCA lists
+					int[] iRepo = cRepoInfo.find("DEPARTMENT", sDept.toLowerCase());
+					String sLastProduct = "";
+					for (int k=0; k<iRepo.length; k++) {
+						if (cRepoInfo.getString(sTagApp, iRepo[k]).isEmpty()) continue;
+						
+						String sProduct = cRepoInfo.getString(sTagProduct, iRepo[k]);
+						if (!sProduct.equalsIgnoreCase(sLastProduct)) {
+							String aApprovers = cRepoInfo.getString(sTagContact, iRepo[k]);
+							int eIndex=-1;
+							do {
+								String sApprover;
+								eIndex = aApprovers.indexOf(';');
+								if (eIndex>0) {
+									sApprover = aApprovers.substring(0, eIndex);
+									aApprovers = aApprovers.substring(eIndex+1);
+								}
+								else
+									sApprover = aApprovers;
+								if (!aContact.contains(sApprover)) {
+						    		if (sProblems.isEmpty()) 
+						    			sProblems = tagUL;			    		
+						    		sProblems+= "<li>The approver,<b>"+sApprover+"</b>, for Endeavor product, <b>"+sProduct+"</b>, is not in the list of DCAs/VCAs for the product's department/division, <b>"+sDept+"</b>.</li>\n";									
+								}								
+							}
+							while (eIndex>0);
+						}
+						sLastProduct = sProduct;
+					}
+				}
+				else {
+		    		if (sProblems.isEmpty()) 
+		    			sProblems = tagUL;			    		
+		    		sProblems+= "<li>The department/division, <b>"+sDept+"</b>, has no DCA/VCA/ZCA value.</li>\n";														
+				}
+			}
+			
+			
+			
 			// Write out tss mapping file with changes
 			if (!cUsers.isEmpty()) {
 				frame.writeCSVFileFromListGeneric(cUsers, sMapFile, ',', null, false);
@@ -532,7 +643,8 @@ public class EndevorRepLdap {
 				if (email.startsWith(";"))
 					email = email.substring(1);
 				
-				if (sProblems.contains("terminated user")) {
+				if (sProblems.contains("terminated user") ||
+					sProblems.contains("DCA")) {
 					email = email+";bigag01@ca.com"; //Team-GIS-Mainframe-PlatformManagement-Security?
 				}
 				
