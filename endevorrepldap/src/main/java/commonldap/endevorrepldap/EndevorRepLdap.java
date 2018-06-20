@@ -560,67 +560,69 @@ public class EndevorRepLdap {
 			
 			//e. Create notifications regarding approvers not in list of DCA/VCAs
 			// retrieve a list of departments
-			ArrayList<String> aDept = new ArrayList<String>();
-			for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount(sTagApp); iIndex++) {
-				String sDept = cRepoInfo.getString("DEPARTMENT", iIndex).toUpperCase();
-				if (!aDept.contains((Object)sDept))
-					aDept.add(sDept.toUpperCase());
-			}
-			Collections.sort(aDept);
-			
-			JCaContainer cDCA = new JCaContainer();
-			readEndevorDepartmentContacts(cDCA, aDept, sDB2Password);
-			
-			for (int iIndex=0; iIndex<aDept.size(); iIndex++) {
-				String sDept = aDept.get(iIndex);
-				int[] iDept = cDCA.find("DEPARTMENT", sDept.toUpperCase());
-				if (iDept.length > 0) {
-					ArrayList<String> aContact = new ArrayList<String>();
-					for (int j=0; j<iDept.length; j++) {
-						String sContact = cDCA.getString("USERID", iDept[j]).toLowerCase();
-						// need to translate from TOPSECRET to CADOMAIN
-						int[] iContact = cUsers.find("TOPSECRET", sContact);
-						if (iContact.length > 0)
-							sContact = cUsers.getString("CADOMAIN", iContact[0]);
-						
-						if (!sContact.equalsIgnoreCase("generic") &&
-							!aContact.contains(sContact))
-							aContact.add(sContact.toLowerCase());
-					}
-						
-					// look at the repo info for matching departments; check if approver is in DCA/VCA lists
-					int[] iRepo = cRepoInfo.find("DEPARTMENT", sDept.toLowerCase());
-					String sLastProduct = "";
-					for (int k=0; k<iRepo.length; k++) {
-						if (cRepoInfo.getString(sTagApp, iRepo[k]).isEmpty()) continue;
-						
-						String sProduct = cRepoInfo.getString(sTagProduct, iRepo[k]);
-						if (!sProduct.equalsIgnoreCase(sLastProduct)) {
-							String aApprovers = cRepoInfo.getString(sTagContact, iRepo[k]);
-							int eIndex=-1;
-							do {
-								String sApprover;
-								eIndex = aApprovers.indexOf(';');
-								if (eIndex>0) {
-									sApprover = aApprovers.substring(0, eIndex);
-									aApprovers = aApprovers.substring(eIndex+1);
-								}
-								else
-									sApprover = aApprovers;
-								if (!aContact.contains(sApprover)) {
-						    		//if (sProblems.isEmpty()) sProblems = tagUL;			    		
-						    		//sProblems+= "<li>The approver,<b>"+sApprover+"</b>, for Endeavor product, <b>"+sProduct+"</b>, is not in the list of DCAs/VCAs for the product's department/division, <b>"+sDept+"</b>.</li>\n";									
-								}								
-							}
-							while (eIndex>0);
-						}
-						sLastProduct = sProduct;
-					}
+			if (bShowTerminated) {				
+				ArrayList<String> aDept = new ArrayList<String>();
+				for (int iIndex=0; iIndex<cRepoInfo.getKeyElementCount(sTagApp); iIndex++) {
+					String sDept = cRepoInfo.getString("DEPARTMENT", iIndex).toUpperCase();
+					if (!aDept.contains((Object)sDept))
+						aDept.add(sDept.toUpperCase());
 				}
-				else {
-		    		if (sProblems.isEmpty()) 
-		    			sProblems = tagUL;			    		
-		    		sProblems+= "<li>The department/division, <b>"+sDept+"</b>, has no DCA/VCA/ZCA value.</li>\n";														
+				Collections.sort(aDept);
+				
+				JCaContainer cDCA = new JCaContainer();
+				readEndevorDepartmentContacts(cDCA, aDept, sDB2Password);
+				
+				for (int iIndex=0; iIndex<aDept.size(); iIndex++) {
+					String sDept = aDept.get(iIndex);
+					int[] iDept = cDCA.find("DEPARTMENT", sDept.toUpperCase());
+					if (iDept.length > 0) {
+						ArrayList<String> aContact = new ArrayList<String>();
+						for (int j=0; j<iDept.length; j++) {
+							String sContact = cDCA.getString("USERID", iDept[j]).toLowerCase();
+							// need to translate from TOPSECRET to CADOMAIN
+							int[] iContact = cUsers.find("TOPSECRET", sContact);
+							if (iContact.length > 0)
+								sContact = cUsers.getString("CADOMAIN", iContact[0]);
+							
+							if (!sContact.equalsIgnoreCase("generic") &&
+								!aContact.contains(sContact))
+								aContact.add(sContact.toLowerCase());
+						}
+							
+						// look at the repo info for matching departments; check if approver is in DCA/VCA lists
+						int[] iRepo = cRepoInfo.find("DEPARTMENT", sDept.toLowerCase());
+						String sLastProduct = "";
+						for (int k=0; k<iRepo.length; k++) {
+							if (cRepoInfo.getString(sTagApp, iRepo[k]).isEmpty()) continue;
+							
+							String sProduct = cRepoInfo.getString(sTagProduct, iRepo[k]);
+							if (!sProduct.equalsIgnoreCase(sLastProduct)) {
+								String aApprovers = cRepoInfo.getString(sTagContact, iRepo[k]);
+								int eIndex=-1;
+								do {
+									String sApprover;
+									eIndex = aApprovers.indexOf(';');
+									if (eIndex>0) {
+										sApprover = aApprovers.substring(0, eIndex);
+										aApprovers = aApprovers.substring(eIndex+1);
+									}
+									else
+										sApprover = aApprovers;
+									if (!aContact.contains(sApprover)) {
+							    		//if (sProblems.isEmpty()) sProblems = tagUL;			    		
+							    		//sProblems+= "<li>The approver,<b>"+sApprover+"</b>, for Endeavor product, <b>"+sProduct+"</b>, is not in the list of DCAs/VCAs for the product's department/division, <b>"+sDept+"</b>.</li>\n";									
+									}								
+								}
+								while (eIndex>0);
+							}
+							sLastProduct = sProduct;
+						}
+					}
+					else {
+			    		if (sProblems.isEmpty()) 
+			    			sProblems = tagUL;			    		
+			    		sProblems+= "<li>The department/division, <b>"+sDept+"</b>, has no DCA/VCA/ZCA value.</li>\n";														
+					}
 				}
 			}
 			
