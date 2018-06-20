@@ -605,9 +605,8 @@ public class EndevorRepLdap {
 								else
 									sApprover = aApprovers;
 								if (!aContact.contains(sApprover)) {
-						    		if (sProblems.isEmpty()) 
-						    			sProblems = tagUL;			    		
-						    		sProblems+= "<li>The approver,<b>"+sApprover+"</b>, for Endeavor product, <b>"+sProduct+"</b>, is not in the list of DCAs/VCAs for the product's department/division, <b>"+sDept+"</b>.</li>\n";									
+						    		//if (sProblems.isEmpty()) sProblems = tagUL;			    		
+						    		//sProblems+= "<li>The approver,<b>"+sApprover+"</b>, for Endeavor product, <b>"+sProduct+"</b>, is not in the list of DCAs/VCAs for the product's department/division, <b>"+sDept+"</b>.</li>\n";									
 								}								
 							}
 							while (eIndex>0);
