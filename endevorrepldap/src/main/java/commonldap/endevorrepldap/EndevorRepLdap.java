@@ -416,7 +416,7 @@ public class EndevorRepLdap {
 					!cRepoInfo.getString(sTagApp, k).isEmpty() ) {
 		    		if (sProblems.isEmpty()) 
 		    			sProblems = tagUL;
-		    		sProblems+= "<li>The product, <b>"+sProject+"</b> is End of Life.</li>\n";
+		    		sProblems+= "<li>The product, <b>"+sProject+"</b>, is End of Life.</li>\n";
 		    		
 					int[] iProjects = cRepoInfo.find(sTagProject, sProject);
 					for (int iIndex=0; iIndex<iProjects.length; iIndex++) {
