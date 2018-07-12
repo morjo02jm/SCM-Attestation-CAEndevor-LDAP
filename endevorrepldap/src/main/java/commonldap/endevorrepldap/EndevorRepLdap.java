@@ -332,12 +332,12 @@ public class EndevorRepLdap {
 			// Write out processed records to database
 			JCaContainer cRepoInfo = new JCaContainer();
 			readDBToRepoContainer(cRepoInfo, sDB2Password);
-/*
+
 			// Write out processed repository in organization file
-			if (!sOutputFile.isEmpty()) {
-				frame.writeCSVFileFromListGeneric(cRepoInfo, sOutputFile, '\t');					
-			}
-*/			
+			//if (!sOutputFile.isEmpty()) {
+			//	frame.writeCSVFileFromListGeneric(cRepoInfo, "C:\\Users\\faudo01\\Downloads\\endeavor-data.tsv", '\t');					
+			//}
+			
 			// a. Loop over records collapsing APP_INSTANCEs
 			String sEntitlementLast = "";
 			String sInstanceLast = "";
