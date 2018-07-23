@@ -416,7 +416,7 @@ public class EndevorRepLdap {
 					!cRepoInfo.getString(sTagApp, k).isEmpty() ) {
 		    		if (sProblems.isEmpty()) 
 		    			sProblems = tagUL;
-		    		sProblems+= "<li>The product, <b>"+sProject+"</b>, is End of Life.</li>\n";
+		    		sProblems+= "<li>The product, <b>"+sProject+"</b>, is End of Life.<br>Action to be taken: Top Secret Administrators to review access records for this product.</li>\n";
 		    		
 					int[] iProjects = cRepoInfo.find(sTagProject, sProject);
 					for (int iIndex=0; iIndex<iProjects.length; iIndex++) {
@@ -453,7 +453,7 @@ public class EndevorRepLdap {
 								
 					    		if (sProblems.isEmpty()) 
 					    			sProblems = tagUL;			    		
-					    		sProblems+= "<li>The Endeavor product, <b>"+sView+"</b>, does not have a valid contact.</li>\n";
+					    		sProblems+= "<li>The Endeavor product, <b>"+sView+"</b>, does not have a valid contact.<br>Action to be taken: GIS to review and update reviewers for this product.</li>\n";
 					    		
 					    		for (int j=i+1; j<iContacts.length; j++) {
 					    			if (sView.contentEquals(cRepoInfo.getString(sTagProject, iContacts[j]))) {
@@ -514,13 +514,13 @@ public class EndevorRepLdap {
 									if (bUnmapped) {
 							    		if (sProblems.isEmpty()) 
 							    			sProblems = tagUL;			    		
-							    		sProblems+= "<li>The Endeavor user id, <b>"+sID+"</b>, references an unmapped user.</li>\n";									
+							    		sProblems+= "<li>The Endeavor user id, <b>"+sID+"</b>, references an unmapped user.<br>Action to be taken: GIS to provide a mapping for this TSS user.</li>\n";									
 									}
 									else {				
 										if (bShowTerminated) {											
 								    		if (sProblems.isEmpty()) 
 								    			sProblems = tagUL;			    		
-								    		sProblems+= "<li>The Endeavor user id, <b>"+sID+"</b>, references a terminated user.</li>\n";									
+								    		sProblems+= "<li>The Endeavor user id, <b>"+sID+"</b>, references a terminated user.<br>Action to be taken: Top Secret administrators to remove access records for this user.</li>\n";									
 										}
 									}									
 									
@@ -610,7 +610,7 @@ public class EndevorRepLdap {
 										sApprover = aApprovers;
 									if (!aContact.contains(sApprover)) {
 							    		if (sProblems.isEmpty()) sProblems = tagUL;			    		
-							    		sProblems+= "<li>The approver,<b>"+sApprover+"</b>, for Endeavor product, <b>"+sProduct+"</b>, is not in the list of DCAs/VCAs for the product's department/division, <b>"+sDept+"</b>.</li>\n";									
+							    		sProblems+= "<li>The approver,<b>"+sApprover+"</b>, for Endeavor product, <b>"+sProduct+"</b>, is not in the list of DCAs/VCAs for the product's department/division, <b>"+sDept+"</b>.<br>Action to be taken: TSS Administrators to review and update DCA lists for this department.</li>\n";									
 									}								
 								}
 								while (eIndex>0);
@@ -621,7 +621,7 @@ public class EndevorRepLdap {
 					else {
 			    		if (sProblems.isEmpty()) 
 			    			sProblems = tagUL;			    		
-			    		sProblems+= "<li>The department/division, <b>"+sDept+"</b>, has no DCA/VCA/ZCA value.</li>\n";														
+			    		sProblems+= "<li>The department/division, <b>"+sDept+"</b>, has no DCA/VCA/ZCA value.<br>Action to be taken: TSS Administrators to review and update DCA lists for this department.</li>\n";														
 					}
 				}
 			}
