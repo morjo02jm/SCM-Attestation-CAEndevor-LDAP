@@ -338,9 +338,7 @@ public class EndevorRepLdap {
 			readDBToRepoContainer(cRepoInfo, sDB2Password);
 
 			// Write out processed repository in organization file
-			//if (!sOutputFile.isEmpty()) {
-			//	frame.writeCSVFileFromListGeneric(cRepoInfo, "C:\\Users\\faudo01\\Downloads\\endeavor-data.tsv", '\t');					
-			//}
+			//frame.writeCSVFileFromListGeneric(cRepoInfo, "C:\\Users\\faudo01\\Downloads\\endeavor-data.tsv", '\t');					
 			
 			// a. Loop over records collapsing APP_INSTANCEs
 			String sEntitlementLast = "";
