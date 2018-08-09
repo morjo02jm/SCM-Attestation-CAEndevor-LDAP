@@ -27,7 +27,7 @@ public class EndevorRepLdap {
 	static String tagUL = "<ul> ";
 	
 	// JDBC
-	private static String sDB2 =  "jdbc:db2://usilca31.ca.com:5220/PP0ADB2"; //"jdbc:db2://mspsprod.ca.com:5220/PP0ADB2";
+	private static String sDB2 = "jdbc:db2://mspsprod.ca.com:5220/PP0ADB2"; //"jdbc:db2://usilca31.ca.com:5220/PP0ADB2"; 
 	
 	EndevorRepLdap() {
 		// Leaving empty		
@@ -611,8 +611,10 @@ public class EndevorRepLdap {
 									else
 										sApprover = aApprovers;
 									if (!aContact.contains(sApprover)) {
+/* comment out until TSS Admins actually use this info									
 							    		if (sProblems.isEmpty()) sProblems = tagUL;			    		
-							    		sProblems+= "<li>The approver,<b>"+sApprover+"</b>, for Endeavor product, <b>"+sProduct+"</b>, is not in the list of DCAs/VCAs for the product's department/division, <b>"+sDept+"</b>.<br>Action to be taken: TSS Administrators to review and update DCA lists for this department.</li>\n";									
+							    		sProblems+= "<li>The approver,<b>"+sApprover+"</b>, for Endeavor product, <b>"+sProduct+"</b>, is not in the list of DCAs/VCAs for the product's department/division, <b>"+sDept+"</b>.<br>Action to be taken: TSS Administrators to review and update DCA lists for this department.</li>\n";
+*/							    											
 									}								
 								}
 								while (eIndex>0);
